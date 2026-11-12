@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online Shopping Mall — Pakistan</title>
+<style>
+:root{--gold:#d9a441;--gold2:#f4d58d;--ink:#302316;--muted:#75695d;--cream:#fffaf1;--line:#eee3d2;--green:#247a50}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Nastaliq Urdu",sans-serif;color:var(--ink);background:#fff}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 16px;font-weight:700}
+.top{background:#302316;color:#fff;text-align:center;padding:8px;font-size:13px}
+header{position:sticky;top:0;background:#fff;z-index:5;box-shadow:0 2px 12px #0000000d}
+.head{max-width:1200px;margin:auto;padding:16px 20px;display:flex;align-items:center;gap:18px}
+.brand{font-size:21px;font-weight:900;white-space:nowrap}.brand b{color:var(--gold)}
+.search{flex:1;display:flex;background:#f7f3ed;border:1px solid var(--line);border-radius:12px;overflow:hidden}.search input{width:100%;border:0;background:transparent;padding:12px;outline:none}.search button{background:var(--gold);border-radius:0}
+.headbtn{background:#fff;border:1px solid var(--line);color:var(--ink);white-space:nowrap}
+nav{border-top:1px solid #f3eee6}.navinner{max-width:1200px;margin:auto;padding:10px 20px;display:flex;gap:22px;overflow:auto;white-space:nowrap}.navinner a{color:var(--ink);text-decoration:none;font-size:14px}
+.hero{max-width:1160px;margin:24px auto;padding:44px 5%;border-radius:22px;background:linear-gradient(110deg,#302316 0%,#63431e 55%,#b9822e 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:25px;min-height:260px}
+.hero h1{font-size:clamp(28px,4vw,46px);margin:0 0 12px;line-height:1.2}.hero p{color:#f8e8c8;max-width:520px;line-height:1.7}.hero .cta{background:var(--gold2);color:#302316}.heroart{font-size:100px;filter:drop-shadow(0 12px 14px #0005)}
+.wrap{max-width:1160px;margin:32px auto;padding:0 20px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.sectionhead h2{margin:0;font-size:23px}.sub{color:var(--muted);font-size:13px}
+.categories{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.cat{background:var(--cream);border:1px solid var(--line);padding:18px 8px;border-radius:14px;text-align:center;font-weight:700}.cat span{display:block;font-size:28px;margin-bottom:8px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.tools select{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.product{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;display:flex;flex-direction:column}.photo{height:170px;background:linear-gradient(135deg,#fbf4e7,#f1dfbd);display:grid;place-items:center;font-size:65px}.pbody{padding:14px;display:flex;flex-direction:column;flex:1}.pbody h3{font-size:16px;margin:0 0 7px}.desc{font-size:12px;color:var(--muted);line-height:1.5;min-height:36px}.price{font-size:18px;font-weight:900;margin:10px 0}.actions{display:flex;gap:8px;margin-top:auto}.add{background:var(--ink);color:#fff;flex:1}.buy{background:var(--gold);color:#302316;flex:1}.pill{font-size:11px;color:#79561e;background:#fff2d7;padding:5px 8px;border-radius:20px;align-self:flex-start}
+footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{max-width:1160px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.foot p{color:#d8c8ae;font-size:13px}
+.overlay{display:none;position:fixed;inset:0;background:#0007;z-index:10;justify-content:flex-end}.overlay.show{display:flex}.drawer{background:#fff;width:min(480px,100%);height:100%;overflow:auto;padding:22px}.drawerhead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}.close{background:#f5eee4}.cartrow{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.mini{width:58px;height:58px;background:var(--cream);display:grid;place-items:center;border-radius:10px;font-size:28px}.qty{display:flex;align-items:center;gap:8px;margin-top:7px}.qty button{padding:4px 9px;background:#f5eee4}.total{display:flex;justify-content:space-between;font-weight:900;font-size:19px;margin:20px 0}.primary{background:var(--gold);color:#302316;width:100%;padding:14px}.secondary{background:#f5eee4;color:var(--ink)}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.panel{background:white;border-radius:18px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:22px}.panel h2{margin-top:0}.field{margin:12px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px}.field textarea{min-height:75px}.notice{background:#edf8f1;border:1px solid #cce8d5;padding:12px;border-radius:10px;font-size:13px;line-height:1.5}.empty{text-align:center;color:var(--muted);padding:35px 10px}
+@media(max-width:850px){.products{grid-template-columns:repeat(2,1fr)}.categories{grid-template-columns:repeat(3,1fr)}.hero{margin:16px 12px}.heroart{font-size:70px}}
+@media(max-width:560px){.head{flex-wrap:wrap;gap:10px}.brand{width:100%}.search{order:3;flex-basis:100%}.headbtn{margin-left:auto}.hero{padding:28px 22px;min-height:220px}.heroart{font-size:52px}.products{gap:10px}.photo{height:130px;font-size:52px}.pbody{padding:10px}.actions{flex-direction:column}.categories{gap:8px}.cat{font-size:12px;padding:13px 4px}}
+</style>
+</head>
+<body>
+<div class="top">پاکستان بھر میں ڈیلیوری دستیاب • Cash on Delivery</div>
+<header>
+ <div class="head">
+  <div class="brand">🛍️ <b>ONLINE</b> SHOPPING MALL</div>
+  <div class="search"><input id="search" placeholder="Search products... / چیز تلاش کریں"><button onclick="renderProducts()">تلاش</button></div>
+  <button class="headbtn" onclick="openCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+ </div>
+ <nav><div class="navinner"><a href="#home">Home</a><a href="#categories">Categories</a><a href="#products">All Products</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav>
+</header>
+<main id="home">
+<section class="hero">
+ <div><span class="pill">WELCOME TO OUR STORE</span><h1>Everything You Need,<br>All in One Place.</h1><p>Shop your favourite products from one convenient online store. Quality products, clear prices and easy ordering across Pakistan.</p><button class="cta" onclick="document.querySelector('#products').scrollIntoView({behavior:'smooth'})">SHOP NOW →</button></div>
+ <div class="heroart">🛍️</div>
+</section>
+<section class="wrap" id="categories"><div class="sectionhead"><h2>Shop by Category</h2><span class="sub">اپنی پسند کی چیز منتخب کریں</span></div>
+ <div class="categories">
+  <div class="cat" onclick="chooseCat('Honey & Natural')"><span>🍯</span>Honey & Natural</div><div class="cat" onclick="chooseCat('Fashion')"><span>👕</span>Fashion</div><div class="cat" onclick="chooseCat('Electronics')"><span>📱</span>Electronics</div><div class="cat" onclick="chooseCat('Home & Kitchen')"><span>🏠</span>Home & Kitchen</div><div class="cat" onclick="chooseCat('Islamic Items')"><span>🕌</span>Islamic Items</div><div class="cat" onclick="chooseCat('Beauty & Care')"><span>🧴</span>Beauty & Care</div>
+ </div>
+</section>
+<section class="wrap" id="products"><div class="sectionhead"><h2>Featured Products</h2><span class="sub">نمونہ مصنوعات — اپنی اصل مصنوعات بعد میں شامل کریں</span></div>
+ <div class="tools"><select id="category" onchange="renderProducts()"><option value="">All Categories</option><option>Honey & Natural</option><option>Fashion</option><option>Electronics</option><option>Home & Kitchen</option><option>Islamic Items</option><option>Beauty & Care</option></select><select id="sort" onchange="renderProducts()"><option value="">Sort: Featured</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option></select></div>
+ <div class="products" id="productsGrid"></div>
+</section>
+<section class="wrap" id="about"><div class="sectionhead"><h2>Why Shop With Us?</h2></div><div class="categories"><div class="cat"><span>🚚</span>Pakistan-wide delivery</div><div class="cat"><span>💵</span>Cash on Delivery</div><div class="cat"><span>🛡️</span>Customer-first service</div><div class="cat"><span>📞</span>Easy order support</div><div class="cat"><span>🛒</span>Simple shopping</div><div class="cat"><span>🎁</span>Great choices</div></div></section>
+</main>
+<footer id="contact"><div class="foot"><div><b>ONLINE SHOPPING MALL</b><p>Everything You Need, All in One Place.</p></div><div><b>Customer Support</b><p>WhatsApp: Add your business number<br>Email: Add your email address</p></div><div><b>Delivery & Payment</b><p>Pakistan delivery • Cash on Delivery</p></div></div></footer>
+<div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">ادائیگی فی الحال Cash on Delivery ہے۔</p></div></div>
+<div class="modal" id="checkoutModal"><div class="panel"><div class="drawerhead"><h2>Checkout / آرڈر مکمل کریں</h2><button class="close" onclick="closeCheckout()">✕</button></div><div class="notice">ادائیگی کا طریقہ: Cash on Delivery (سامان ملنے پر ادائیگی)</div>
+<form id="orderForm">
+<div class="field"><label>Full Name / پورا نام *</label><input name="name" required></div>
+<div class="field"><label>Mobile Number / موبائل نمبر *</label><input name="phone" required placeholder="03XXXXXXXXX"></div>
+<div class="field"><label>City / شہر *</label><input name="city" required></div>
+<div class="field"><label>Complete Address / مکمل پتہ *</label><textarea name="address" required></textarea></div>
+<div class="field"><label>Payment</label><input value="Cash on Delivery" readonly></div>
+<div class="total"><span>Order Total</span><span id="checkoutTotal">Rs. 0</span></div>
+<button class="primary" type="submit">PLACE ORDER</button>
+</form><p class="sub">نوٹ: یہ ابتدائی ڈیمو ہے۔ اصل آرڈر وصول کرنے کے لیے ویب سائٹ کو ڈیٹابیس اور اپنے WhatsApp نمبر سے جوڑنا ہوگا۔</p></div></div>
+<script>
+const products=[
+{id:1,name:"Pure Natural Honey 500g",cat:"Honey & Natural",price:1800,emoji:"🍯",desc:"خالص قدرتی شہد — 500 گرام"},
+{id:2,name:"Premium Honey 1kg",cat:"Honey & Natural",price:3200,emoji:"🍯",desc:"شہد — ایک کلوگرام"},
+{id:3,name:"Men's Casual Shirt",cat:"Fashion",price:1450,emoji:"👕",desc:"روزمرہ استعمال کے لیے آرام دہ شرٹ"},
+{id:4,name:"Wireless Earbuds",cat:"Electronics",price:2200,emoji:"🎧",desc:"وائرلیس ایئربڈز — نمونہ پروڈکٹ"},
+{id:5,name:"Kitchen Storage Set",cat:"Home & Kitchen",price:1250,emoji:"🍽️",desc:"کچن کے لیے اسٹوریج سیٹ"},
+{id:6,name:"Prayer Mat",cat:"Islamic Items",price:950,emoji:"🕌",desc:"نرم اور خوبصورت جائے نماز"},
+{id:7,name:"Tasbeeh",cat:"Islamic Items",price:250,emoji:"📿",desc:"روزمرہ استعمال کی تسبیح"},
+{id:8,name:"Perfume",cat:"Beauty & Care",price:1600,emoji:"🧴",desc:"خوشبودار پرفیوم — نمونہ پروڈکٹ"}
+];
+let cart=JSON.parse(localStorage.getItem("osm_cart")||"[]");
+const money=n=>"Rs. "+Number(n).toLocaleString("en-PK");
+function renderProducts(){let q=document.getElementById("search").value.toLowerCase(),cat=document.getElementById("category").value,sort=document.getElementById("sort").value;let list=products.filter(p=>(!cat||p.cat===cat)&&(p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));if(sort==="low")list.sort((a,b)=>a.price-b.price);if(sort==="high")list.sort((a,b)=>b.price-a.price);document.getElementById("productsGrid").innerHTML=list.length?list.map(p=>`<article class="product"><div class="photo">${p.emoji}</div><div class="pbody"><span class="pill">${p.cat}</span><h3>${p.name}</h3><div class="desc">${p.desc}</div><div class="price">${money(p.price)}</div><div class="actions"><button class="add" onclick="addToCart(${p.id})">Add to Cart</button><button class="buy" onclick="buyNow(${p.id})">Buy Now</button></div></div></article>`).join(""):'<div class="empty">کوئی پروڈکٹ نہیں ملی۔</div>'}
+function save(){localStorage.setItem("osm_cart",JSON.stringify(cart));updateCart()}
+function addToCart(id){let x=cart.find(i=>i.id===id);x?x.qty++:cart.push({id,qty:1});save()}
+function buyNow(id){addToCart(id);openCart()}
+function updateCart(){document.getElementById("cartCount").textContent=cart.reduce((s,i)=>s+i.qty,0);let total=0;document.getElementById("cartItems").innerHTML=cart.length?cart.map(i=>{let p=products.find(x=>x.id===i.id);total+=p.price*i.qty;return `<div class="cartrow"><div class="mini">${p.emoji}</div><div style="flex:1"><b>${p.name}</b><div>${money(p.price)}</div><div class="qty"><button onclick="changeQty(${p.id},-1)">−</button>${i.qty}<button onclick="changeQty(${p.id},1)">+</button><button class="secondary" onclick="removeItem(${p.id})">Remove</button></div></div></div>`}).join(""):'<div class="empty">آپ کا کارٹ خالی ہے۔</div>';document.getElementById("cartTotal").textContent=money(total);document.getElementById("checkoutTotal").textContent=money(total)}
+function changeQty(id,n){let x=cart.find(i=>i.id===id);if(x){x.qty+=n;if(x.qty<=0)cart=cart.filter(i=>i.id!==id)}save()}
+function removeItem(id){cart=cart.filter(i=>i.id!==id);save()}
+function openCart(){document.getElementById("cartOverlay").classList.add("show");updateCart()}function closeCart(){document.getElementById("cartOverlay").classList.remove("show")}
+function checkout(){if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return}closeCart();document.getElementById("checkoutModal").classList.add("show");updateCart()}
+function closeCheckout(){document.getElementById("checkoutModal").classList.remove("show")}
+function chooseCat(c){document.getElementById("category").value=c;renderProducts();document.getElementById("products").scrollIntoView({behavior:"smooth"})}
+document.getElementById("search").addEventListener("input",renderProducts);
+document.getElementById("orderForm").addEventListener("submit",e=>{e.preventDefault();let f=new FormData(e.target),items=cart.map(i=>{let p=products.find(x=>x.id===i.id);return `${p.name} x ${i.qty} = ${money(p.price*i.qty)}`}).join("\n"),total=cart.reduce((s,i)=>s+products.find(p=>p.id===i.id).price*i.qty,0),order={number:"OSM"+Date.now().toString().slice(-7),name:f.get("name"),phone:f.get("phone"),city:f.get("city"),address:f.get("address"),items,total,payment:"Cash on Delivery",date:new Date().toLocaleString()};let orders=JSON.parse(localStorage.getItem("osm_demo_orders")||"[]");orders.push(order);localStorage.setItem("osm_demo_orders",JSON.stringify(orders));alert("آپ کا ڈیمو آرڈر بن گیا!\nOrder # "+order.number+"\nکل رقم: "+money(total)+"\n\nاہم: یہ آرڈر صرف اسی براؤزر میں محفوظ ہے، دکاندار کو خودکار طور پر موصول نہیں ہوگا۔");cart=[];save();closeCheckout();e.target.reset()});
+renderProducts();updateCart();
+</script>
+</body></html>
