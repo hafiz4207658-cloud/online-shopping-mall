@@ -220,7 +220,7 @@ document.getElementById("orderForm").addEventListener("submit", async e => {
     btn.disabled = false;
     btn.textContent = "PLACE ORDER";
   }
-});, async e=>{
+
   e.preventDefault();
   if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}
   const btn=document.getElementById("placeOrderBtn");btn.disabled=true;btn.textContent="PLEASE WAIT...";
