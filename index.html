@@ -39,7 +39,7 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
     <div class="search"><input id="search" placeholder="Search products... / چیز تلاش کریں"><button onclick="renderProducts()">تلاش</button></div>
     <button class="headbtn" onclick="openCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
   </div>
-  <nav><div class="navinner"><a href="#home">Home</a><a href="#categories">Categories</a><a href="#products">All Products</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav>
+  <nav><div class="navinner"><a href="#home">Home</a><a href="#categories">Categories</a><a href="#products">All Products</a><a href="#track">Track Order</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav>
 </header>
 <main id="home">
   <section class="hero">
@@ -55,7 +55,29 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
   <section class="wrap" id="products"><div class="sectionhead"><h2>All Products</h2><span class="sub">ڈیٹابیس سے دستیاب مصنوعات</span></div>
     <div class="tools"><select id="category" onchange="renderProducts()"><option value="">All Categories</option><option>Honey & Natural</option><option>Fashion</option><option>Electronics</option><option>Home & Kitchen</option><option>Islamic Items</option><option>Beauty & Care</option></select><select id="sort" onchange="renderProducts()"><option value="">Sort: Featured</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option></select></div>
     <div class="products" id="productsGrid"></div>
-  </section>
+  </section><section id="track" class="wrap" style="padding:35px 15px;">
+  <div class="sectionhead">
+    <h2>Track Your Order</h2>
+    <span class="sub">اپنے آرڈر کی صورتحال معلوم کریں</span>
+  </div>
+
+  <div style="max-width:500px;margin:20px auto;padding:22px;background:white;border:1px solid #ddd;border-radius:12px;">
+    <label>آرڈر نمبر</label>
+    <input id="trackOrderId" type="number" placeholder="مثلاً 123"
+      style="width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;">
+
+    <label>موبائل نمبر</label>
+    <input id="trackPhone" type="tel" placeholder="وہی نمبر درج کریں جو آرڈر میں دیا تھا"
+      style="width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;">
+
+    <button type="button" onclick="trackOrder()"
+      style="width:100%;padding:13px;background:#198754;color:white;border:0;border-radius:7px;cursor:pointer;">
+      آرڈر چیک کریں
+    </button>
+
+    <div id="trackingResult" style="margin-top:18px;line-height:2;"></div>
+  </div>
+</section>
   <section class="wrap" id="about"><div class="sectionhead"><h2>Why Shop With Us?</h2></div><div class="categories"><div class="cat"><span>🚚</span>Pakistan-wide delivery</div><div class="cat"><span>💵</span>Cash on Delivery</div><div class="cat"><span>🛡️</span>Customer-first service</div><div class="cat"><span>📞</span>Easy order support</div><div class="cat"><span>🛒</span>Simple shopping</div><div class="cat"><span>🎁</span>Great choices</div></div></section>
 </main>
 <footer id="contact"><div class="foot"><div><b>ONLINE SHOPPING MALL</b><p>Everything You Need, All in One Place.</p></div><div><b>Customer Support</b><p>WhatsApp: Add your business number<br>Email: Add your email address</p></div><div><b>Delivery & Payment</b><p>Pakistan delivery • Cash on Delivery</p></div></div></footer>
@@ -176,6 +198,54 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
   }finally{btn.disabled=false;btn.textContent="PLACE ORDER";}
 });
 loadProducts();
-</script>
+async function trackOrder() {
+  const orderId = document.getElementById("trackOrderId").value.trim();
+  const phone = document.getElementById("trackPhone").value.trim();
+  const result = document.getElementById("trackingResult");
+
+  if (!orderId || !phone) {
+    result.textContent = "براہ کرم آرڈر نمبر اور موبائل نمبر دونوں درج کریں۔";
+    return;
+  }
+
+  result.textContent = "آرڈر چیک ہو رہا ہے، انتظار کریں...";
+
+  const { data, error } = await db.rpc("track_customer_order", {
+    p_order_id: Number(orderId),
+    p_phone: phone
+  });
+
+  if (error) {
+    console.error(error);
+    result.textContent = "معذرت، آرڈر چیک نہیں ہو سکا۔ دوبارہ کوشش کریں۔";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    result.textContent = "آرڈر نہیں ملا۔ آرڈر نمبر اور موبائل نمبر دوبارہ چیک کریں۔";
+    return;
+  }
+
+  const order = data[0];
+
+  const statuses = {
+    pending: "آرڈر موصول ہو گیا ہے",
+    processing: "آپ کا آرڈر تیار ہو رہا ہے",
+    shipped: "آپ کا آرڈر روانہ کر دیا گیا ہے",
+    delivered: "آپ کا آرڈر پہنچا دیا گیا ہے",
+    cancelled: "آپ کا آرڈر منسوخ ہو گیا ہے"
+  };
+
+  const status = String(order.order_status).toLowerCase();
+  const date = new Date(order.order_date).toLocaleString("en-PK");
+
+  result.textContent =
+    "آرڈر نمبر: " + order.order_id +
+    "\nحالت: " + (statuses[status] || order.order_status) +
+    "\nکل رقم: Rs. " + order.order_total +
+    "\nتاریخ: " + date;
+
+  result.style.whiteSpace = "pre-line";
+}</script>
 </body>
 </html>
