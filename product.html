@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product Details — Online Shopping Mall Pakistan</title>
+<meta name="description" content="Product details from Online Shopping Mall Pakistan."><meta name="robots" content="index,follow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#d9a441;--ink:#302316;--muted:#75695d;--cream:#fffaf1;--line:#eee3d2}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Nastaliq Urdu",sans-serif;color:var(--ink)}
+header{padding:16px 20px;border-bottom:1px solid var(--line);font-weight:900}header a{color:var(--ink);text-decoration:none}
+main{max-width:1000px;margin:35px auto;padding:0 18px}.card{display:grid;grid-template-columns:1fr 1fr;gap:30px;border:1px solid var(--line);border-radius:18px;padding:22px}
+.photo{min-height:340px;background:var(--cream);border-radius:14px;display:grid;place-items:center;overflow:hidden;font-size:90px}.photo img{width:100%;height:100%;min-height:340px;object-fit:contain}
+.category{display:inline-block;background:#fff2d7;color:#79561e;border-radius:20px;padding:6px 10px;font-size:12px}
+h1{font-size:30px;margin:16px 0 10px}.desc{line-height:1.8;color:var(--muted);white-space:pre-wrap}.price{font-size:26px;font-weight:900;margin:20px 0}.stock{font-size:14px;margin-bottom:18px}
+button{border:0;border-radius:10px;padding:14px 20px;background:var(--gold);color:var(--ink);font-weight:800;cursor:pointer}.secondary{background:#f5eee4;margin-left:8px}
+@media(max-width:700px){.card{grid-template-columns:1fr}.photo,.photo img{min-height:250px}h1{font-size:24px}}
+</style></head>
+<body>
+<header><a href="/">🛍️ ONLINE SHOPPING MALL — واپس دکان پر جائیں</a></header>
+<main><div id="message">مصنوعات کی تفصیل لوڈ ہو رہی ہے...</div>
+<article class="card" id="productCard" hidden>
+<div class="photo" id="productPhoto">🛍️</div><div>
+<span class="category" id="category"></span><h1 id="name"></h1><div class="desc" id="description"></div>
+<div class="price" id="price"></div><div class="stock" id="stock"></div>
+<button id="addButton" type="button">کارٹ میں شامل کریں</button><button class="secondary" type="button" onclick="location.href='/'">مزید خریداری</button>
+</div></article></main>
+<script>
+const SUPABASE_URL="https://hxyrmrypwvkrndoontnj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_oACOcsBAFOMzfV9kzP-egg_p5w-Aen2";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const money=n=>"Rs. "+Number(n||0).toLocaleString("en-PK");
+const productId=new URLSearchParams(location.search).get("id");let product=null;
+async function loadProduct(){
+ const message=document.getElementById("message");
+ if(!productId){message.textContent="مصنوعے کا نمبر موجود نہیں۔ دکان سے مصنوعہ منتخب کریں۔";return;}
+ const {data,error}=await db.from("products").select("id,name,description,price,image_url,category,stock,is_active").eq("id",productId).eq("is_active",true).maybeSingle();
+ if(error||!data){console.error(error);message.textContent="یہ مصنوعہ نہیں مل سکا یا فی الحال دستیاب نہیں ہے۔";return;}
+ product=data;document.getElementById("productCard").hidden=false;message.textContent="";
+ document.getElementById("name").textContent=product.name||"";
+ document.getElementById("description").textContent=product.description||"";
+ document.getElementById("category").textContent=product.category||"General";
+ document.getElementById("price").textContent=money(product.price);
+ document.getElementById("stock").textContent=Number(product.stock)>0?"دستیاب مقدار: "+product.stock:"فی الحال اسٹاک ختم ہے";
+ if(product.image_url){const img=document.createElement("img");img.src=product.image_url;img.alt=product.name||"";document.getElementById("productPhoto").replaceChildren(img);}
+ document.title=(product.name||"Product")+" — Online Shopping Mall Pakistan";
+ document.querySelector('meta[name="description"]').content=(product.name||"")+" — "+(product.description||"")+" قیمت "+money(product.price);
+ const canonical=document.createElement("link");canonical.rel="canonical";canonical.href=location.origin+location.pathname+"?id="+encodeURIComponent(product.id);document.head.appendChild(canonical);
+ const schema=document.createElement("script");schema.type="application/ld+json";
+ schema.textContent=JSON.stringify({"@context":"https://schema.org/","@type":"Product","name":product.name,"description":product.description,"image":product.image_url?[product.image_url]:undefined,"offers":{"@type":"Offer","price":String(product.price),"priceCurrency":"PKR","availability":Number(product.stock)>0?"https://schema.org/InStock":"https://schema.org/OutOfStock"}});
+ document.head.appendChild(schema);document.getElementById("addButton").disabled=Number(product.stock)<1;
+}
+document.getElementById("addButton").addEventListener("click",()=>{
+ if(!product)return;const cart=JSON.parse(localStorage.getItem("osm_cart")||"[]");
+ const item=cart.find(i=>String(i.id)===String(product.id));if(item)item.qty=Number(item.qty)+1;else cart.push({id:product.id,qty:1});
+ localStorage.setItem("osm_cart",JSON.stringify(cart));document.getElementById("message").textContent="مصنوعہ کارٹ میں شامل ہو گیا ہے۔ دکان پر واپس جا کر کارٹ کھولیں۔";
+});
+loadProduct();
+</script></body></html>
