@@ -168,7 +168,59 @@ function checkout(){if(!cart.length){alert("آپ کا کارٹ خالی ہے۔")
 function closeCheckout(){document.getElementById("checkoutModal").classList.remove("show");}
 function chooseCat(c){document.getElementById("category").value=c;renderProducts();document.getElementById("products").scrollIntoView({behavior:"smooth"});}
 document.getElementById("search").addEventListener("input",renderProducts);
-document.getElementById("orderForm").addEventListener("submit", async e=>{
+document.getElementById("orderForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  if (!cart.length) {
+    alert("آپ کا کارٹ خالی ہے۔");
+    return;
+  }
+
+  const btn = document.getElementById("placeOrderBtn");
+  btn.disabled = true;
+  btn.textContent = "انتظار کریں...";
+
+  try {
+    const form = new FormData(e.target);
+
+    const { data, error } = await db.rpc("place_customer_order", {
+      p_customer_name: String(form.get("name")).trim(),
+      p_phone: String(form.get("phone")).trim(),
+      p_address: String(form.get("address")).trim(),
+      p_city: String(form.get("city")).trim(),
+      p_items: cart.map(i => ({
+        id: Number(i.id),
+        quantity: Number(i.qty)
+      }))
+    });
+
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      throw new Error("آرڈر کی تصدیق موصول نہیں ہوئی۔");
+    }
+
+    const order = data[0];
+
+    alert(
+      "آپ کا آرڈر کامیابی سے جمع ہوگیا!\n" +
+      "آرڈر نمبر: " + order.order_id +
+      "\nکل رقم: " + money(order.order_total)
+    );
+
+    cart = [];
+    save();
+    closeCheckout();
+    e.target.reset();
+
+  } catch (err) {
+    console.error(err);
+    alert("آرڈر جمع نہیں ہو سکا۔ خرابی: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "PLACE ORDER";
+  }
+});, async e=>{
   e.preventDefault();
   if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}
   const btn=document.getElementById("placeOrderBtn");btn.disabled=true;btn.textContent="PLEASE WAIT...";
