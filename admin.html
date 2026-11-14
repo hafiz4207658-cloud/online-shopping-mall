@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Shopping Mall - Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f4f6;margin:0;padding:20px;color:#222}
+.container{max-width:1100px;margin:auto}
+h1,h2{text-align:center}
+.card{background:white;padding:20px;margin:15px 0;border-radius:10px;box-shadow:0 2px 8px #ddd}
+input,textarea,select,button{width:100%;padding:12px;margin:7px 0;box-sizing:border-box;border:1px solid #ccc;border-radius:6px}
+button{background:#176b45;color:white;border:0;cursor:pointer;font-weight:bold}
+button.danger{background:#b42318}
+table{width:100%;border-collapse:collapse;background:white}
+th,td{padding:10px;border:1px solid #ddd;text-align:left}
+.tablewrap{overflow-x:auto}
+#dashboard{display:none}
+#message{font-weight:bold;text-align:center}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Online Shopping Mall</h1>
+<h2>Admin Panel</h2>
+
+<div class="card" id="login">
+<h3>Admin Login</h3>
+<input id="email" type="email" placeholder="Admin Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="loginAdmin()">Login</button>
+<p id="loginMessage"></p>
+</div>
+
+<div id="dashboard">
+<div class="card">
+<h3>Admin Dashboard</h3>
+<button onclick="loadData()">Refresh Data</button>
+<button class="danger" onclick="logout()">Logout</button>
+<p id="message"></p>
+</div>
+
+<div class="card">
+<h3>Add New Product</h3>
+<input id="pname" placeholder="Product Name">
+<textarea id="pdesc" placeholder="Description"></textarea>
+<input id="price" type="number" placeholder="Price">
+<input id="image" placeholder="Image URL">
+<input id="category" placeholder="Category">
+<input id="stock" type="number" placeholder="Stock">
+<button onclick="addProduct()">Add Product</button>
+</div>
+
+<div class="card">
+<h3>Products</h3>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Name</th><th>Price</th><th>Stock</th><th>Active</th></tr></thead>
+<tbody id="products"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<h3>Customer Orders</h3>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+<tbody id="orders"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://hxyrmrypwvkrndoontnj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_oACOcsBAFOMzfV9kzP-egg_p5w-Aen2";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function loginAdmin(){
+ const email=document.getElementById("email").value;
+ const password=document.getElementById("password").value;
+ const msg=document.getElementById("loginMessage");
+ msg.textContent="Logging in...";
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error){msg.textContent=error.message;return;}
+ const {data:admin,error:adminError}=await db
+ .from("admin_users").select("user_id").eq("user_id",data.user.id).maybeSingle();
+ if(adminError || !admin){
+   await db.auth.signOut();
+   msg.textContent="You are not an authorized admin.";
+   return;
+ }
+ document.getElementById("login").style.display="none";
+ document.getElementById("dashboard").style.display="block";
+ loadData();
+}
+
+async function logout(){
+ await db.auth.signOut();
+ location.reload();
+}
+
+async function loadData(){
+ const msg=document.getElementById("message");
+ msg.textContent="Loading...";
+ const {data:products,error:pError}=await db.from("products").select("*").order("created_at",{ascending:false});
+ if(pError){msg.textContent="Products: "+pError.message;return;}
+ document.getElementById("products").innerHTML=products.map(p=>`
+ <tr>
+ <td>${escapeHTML(p.name)}</td>
+ <td>${p.price}</td>
+ <td>${p.stock}</td>
+ <td>${p.is_active ? "Yes":"No"}</td>
+ </tr>`).join("");
+
+ const {data:orders,error:oError}=await db.from("orders").select("*").order("created_at",{ascending:false});
+ if(oError){msg.textContent="Orders: "+oError.message;return;}
+ document.getElementById("orders").innerHTML=orders.map(o=>`
+ <tr>
+ <td>${escapeHTML(o.customer_name)}</td>
+ <td>${escapeHTML(o.phone)}</td>
+ <td>${escapeHTML(o.city)}</td>
+ <td>${o.total}</td>
+ <td>${escapeHTML(o.status || "")}</td>
+ <td>
+ <select id="status-${o.id}">
+ <option value="Pending">Pending</option>
+ <option value="Processing">Processing</option>
+ <option value="Shipped">Shipped</option>
+ <option value="Delivered">Delivered</option>
+ <option value="Cancelled">Cancelled</option>
+ </select>
+ <button onclick="updateOrder('${o.id}')">Save</button>
+ </td>
+ </tr>`).join("");
+ orders.forEach(o=>{
+  const s=document.getElementById("status-"+o.id);
+  if(s) s.value=o.status || "Pending";
+ });
+ msg.textContent="Data loaded.";
+}
+
+async function addProduct(){
+ const product={
+  name:document.getElementById("pname").value.trim(),
+  description:document.getElementById("pdesc").value.trim(),
+  price:Number(document.getElementById("price").value),
+  image_url:document.getElementById("image").value.trim(),
+  category:document.getElementById("category").value.trim(),
+  stock:Number(document.getElementById("stock").value),
+  is_active:true
+ };
+ if(!product.name || !product.price){alert("Name and price are required.");return;}
+ const {error}=await db.from("products").insert(product);
+ if(error){alert("Error: "+error.message);return;}
+ alert("Product added.");
+ loadData();
+}
+
+async function updateOrder(id){
+ const status=document.getElementById("status-"+id).value;
+ const {error}=await db.from("orders").update({status}).eq("id",id);
+ if(error){alert("Error: "+error.message);return;}
+ alert("Order status updated.");
+ loadData();
+}
+
+function escapeHTML(value){
+ return String(value ?? "").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+</script>
+</body>
+</html>
