@@ -247,5 +247,50 @@ async function trackOrder() {
 
   result.style.whiteSpace = "pre-line";
 }</script>
+<style>
+#osmChatButton{position:fixed;right:22px;bottom:22px;z-index:1000;background:#302316;color:#fff;border:2px solid #d9a441;border-radius:50px;padding:14px 20px;box-shadow:0 5px 22px #0003;font-size:15px}
+#osmChatPanel{display:none;position:fixed;right:22px;bottom:86px;z-index:1001;width:min(360px,calc(100vw - 28px));height:min(510px,calc(100vh - 120px));background:#fff;border:1px solid #e7d8c3;border-radius:18px;box-shadow:0 10px 35px #0003;overflow:hidden;flex-direction:column}
+#osmChatPanel.open{display:flex}#osmChatHead{background:#302316;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+#osmChatHead strong{font-size:16px}#osmChatClose{background:transparent;color:#fff;padding:3px 8px;font-size:20px}
+#osmChatIntro{padding:10px 14px;background:#fffaf1;color:#75695d;font-size:12px;line-height:1.5}
+#osmChatMessages{padding:12px;overflow-y:auto;flex:1;background:#fcfaf6;display:flex;flex-direction:column;gap:9px}
+.osmChatMsg{max-width:85%;padding:9px 11px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.osmChatMsg.customer{align-self:flex-end;background:#f4d58d;color:#302316;border-bottom-right-radius:3px}
+.osmChatMsg.admin{align-self:flex-start;background:#fff;border:1px solid #eee3d2;color:#302316;border-bottom-left-radius:3px}
+.osmChatTime{display:block;font-size:10px;opacity:.65;margin-top:3px}
+#osmChatForm{padding:10px;border-top:1px solid #eee3d2;display:flex;gap:7px;background:#fff}
+#osmChatName{width:calc(100% - 20px);margin:0 10px 10px;border:1px solid #e5dacb;border-radius:9px;padding:10px}
+#osmChatText{min-width:0;flex:1;border:1px solid #e5dacb;border-radius:9px;padding:10px;outline:none}
+#osmChatSend{background:#d9a441;color:#302316;padding:10px 13px}#osmChatStatus{font-size:11px;color:#75695d;padding:0 12px 8px;background:#fff}
+@media(max-width:480px){#osmChatButton{right:14px;bottom:14px}#osmChatPanel{right:10px;bottom:76px}}
+</style>
+<button id="osmChatButton" type="button">💬 کسٹمر سپورٹ</button>
+<section id="osmChatPanel" aria-label="Customer support chat">
+ <div id="osmChatHead"><strong>💬 Live Chat Support</strong><button id="osmChatClose" type="button">×</button></div>
+ <div id="osmChatIntro">السلام علیکم! اپنا نام درج کریں اور ہمیں پیغام بھیجیں۔ ہم جلد جواب دیں گے۔</div>
+ <div style="padding:10px 10px 0;background:#fff"><input id="osmChatName" maxlength="80" placeholder="آپ کا نام" autocomplete="name"></div>
+ <div id="osmChatMessages"><div class="osmChatMsg admin">السلام علیکم! ہماری کسٹمر سپورٹ میں خوش آمدید۔</div></div>
+ <div id="osmChatStatus">اپنا پیغام لکھیں۔</div>
+ <form id="osmChatForm"><input id="osmChatText" maxlength="2000" placeholder="اپنا پیغام لکھیں..." autocomplete="off" required><button id="osmChatSend" type="submit">بھیجیں</button></form>
+</section>
+<script>
+(function(){
+ const CHAT_URL="https://hxyrmrypwvkrndoontnj.supabase.co",CHAT_KEY="sb_publishable_oACOcsBAFOMzfV9kzP-egg_p5w-Aen2";
+ const chatDb=window.supabase.createClient(CHAT_URL,CHAT_KEY),$=id=>document.getElementById(id);
+ const panel=$("osmChatPanel"),messages=$("osmChatMessages"),status=$("osmChatStatus");
+ let token=localStorage.getItem("osm_chat_token")||"",pollHandle=null,sending=false;
+ function safeText(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+ function makeToken(){if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16);});}
+ async function ensureSession(){if(!token){token=makeToken();localStorage.setItem("osm_chat_token",token);}const name=$("osmChatName").value.trim()||"Customer";localStorage.setItem("osm_chat_name",name);const{error}=await chatDb.rpc("customer_chat_start",{p_token:token,p_name:name});if(error)throw error;}
+ function renderMessages(rows){if(!rows||!rows.length){messages.innerHTML='<div class="osmChatMsg admin">السلام علیکم! اپنا سوال یا پیغام یہاں بھیجیں۔</div>';return;}messages.innerHTML=rows.map(m=>'<div class="osmChatMsg '+(m.sender==="customer"?"customer":"admin")+'">'+safeText(m.message)+'<span class="osmChatTime">'+(m.created_at?new Date(m.created_at).toLocaleString("en-PK",{hour:"2-digit",minute:"2-digit"}):"")+'</span></div>').join("");messages.scrollTop=messages.scrollHeight;}
+ async function loadMessages(){if(!token)return;const{data,error}=await chatDb.rpc("customer_chat_get",{p_token:token});if(error){console.error(error);status.textContent="پیغامات لوڈ نہیں ہو سکے۔ دوبارہ کوشش کریں۔";return;}renderMessages(data||[]);}
+ async function openChat(){panel.classList.add("open");$("osmChatName").value=localStorage.getItem("osm_chat_name")||"";try{await ensureSession();status.textContent="آپ کا پیغام محفوظ طریقے سے بھیجا جائے گا۔";await loadMessages();if(pollHandle)clearInterval(pollHandle);pollHandle=setInterval(loadMessages,4000);$("osmChatText").focus();}catch(e){console.error(e);status.textContent="چیٹ شروع نہیں ہو سکی۔ کچھ دیر بعد دوبارہ کوشش کریں۔";}}
+ function closeChat(){panel.classList.remove("open");if(pollHandle){clearInterval(pollHandle);pollHandle=null;}}
+ $("osmChatButton").addEventListener("click",openChat);$("osmChatClose").addEventListener("click",closeChat);
+ $("osmChatName").addEventListener("change",async()=>{if(panel.classList.contains("open"))try{await ensureSession();status.textContent="نام محفوظ ہو گیا۔";}catch(e){console.error(e);}});
+ $("osmChatForm").addEventListener("submit",async e=>{e.preventDefault();const message=$("osmChatText").value.trim();if(!message||sending)return;sending=true;$("osmChatSend").disabled=true;try{await ensureSession();const{error}=await chatDb.rpc("customer_chat_send",{p_token:token,p_message:message});if(error)throw error;$("osmChatText").value="";status.textContent="پیغام بھیج دیا گیا۔";await loadMessages();}catch(e){console.error(e);status.textContent="پیغام نہیں بھیجا جا سکا۔ دوبارہ کوشش کریں۔";}finally{sending=false;$("osmChatSend").disabled=false;}});
+})();
+</script>
+
 </body>
 </html>
