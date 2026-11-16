@@ -2,8 +2,8 @@
 <html lang="ur" dir="ltr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Product Details — Online Shopping Mall Pakistan</title>
-<meta name="description" content="Product details from Online Shopping Mall Pakistan."><meta name="robots" content="index,follow">
+<title>Product Details — Z.Mart PK Pakistan</title>
+<meta name="description" content="Product details from Z.Mart PK, Pakistan."><meta name="robots" content="index,follow">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--gold:#d9a441;--ink:#302316;--muted:#75695d;--cream:#fffaf1;--line:#eee3d2}
@@ -17,7 +17,7 @@ button{border:0;border-radius:10px;padding:14px 20px;background:var(--gold);colo
 @media(max-width:700px){.card{grid-template-columns:1fr}.photo,.photo img{min-height:250px}h1{font-size:24px}}
 </style></head>
 <body>
-<header><a href="/">🛍️ ONLINE SHOPPING MALL — واپس دکان پر جائیں</a></header>
+<header><a href="/">🛍️ Z.Mart PK — واپس دکان پر جائیں</a></header>
 <main><div id="message">مصنوعات کی تفصیل لوڈ ہو رہی ہے...</div>
 <article class="card" id="productCard" hidden>
 <div class="photo" id="productPhoto">🛍️</div><div>
@@ -43,7 +43,7 @@ async function loadProduct(){
  document.getElementById("price").textContent=money(product.price);
  document.getElementById("stock").textContent=Number(product.stock)>0?"دستیاب مقدار: "+product.stock:"فی الحال اسٹاک ختم ہے";
  if(product.image_url){const img=document.createElement("img");img.src=product.image_url;img.alt=product.name||"";document.getElementById("productPhoto").replaceChildren(img);}
- document.title=(product.name||"Product")+" — Online Shopping Mall Pakistan";
+ document.title=(product.name||"Product")+" — Z.Mart PK Pakistan";
  document.querySelector('meta[name="description"]').content=(product.name||"")+" — "+(product.description||"")+" قیمت "+money(product.price);
  const canonical=document.createElement("link");canonical.rel="canonical";canonical.href=location.origin+location.pathname+"?id="+encodeURIComponent(product.id);document.head.appendChild(canonical);
  const schema=document.createElement("script");schema.type="application/ld+json";
