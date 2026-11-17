@@ -142,7 +142,7 @@ async function loadData(){
 
  (orders||[]).forEach(o=>{
   const select=document.getElementById("status-"+o.id);
-  if(select)select.value=o.status||"Pending";
+  if(select)select.value=String(o.status||"pending").toLowerCase();
   const paymentSelect=document.getElementById("payment-status-"+o.id);
   if(paymentSelect)paymentSelect.value=o.payment_status||"pending";
  });
