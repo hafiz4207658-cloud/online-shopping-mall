@@ -354,7 +354,7 @@ async function trackOrder() {
   const phone = document.getElementById("trackPhone").value.trim();
   const result = document.getElementById("trackingResult");
 
-  if (!orderId || !phone || !/^\\d+$/.test(orderId)) {
+  if (!orderId || !phone || !/^\d+$/.test(orderId)) {
     result.textContent = "براہ کرم درست آرڈر نمبر اور موبائل نمبر دونوں درج کریں۔";
     return;
   }
@@ -384,9 +384,9 @@ async function trackOrder() {
   const date = new Date(order.order_date).toLocaleString("en-PK");
   result.textContent =
     "آرڈر نمبر: " + order.order_id +
-    "\\nحالت: " + (statuses[status] || order.order_status) +
-    "\\nکل رقم: Rs. " + order.order_total +
-    "\\nتاریخ: " + date;
+    "\nحالت: " + (statuses[status] || order.order_status) +
+    "\nکل رقم: Rs. " + order.order_total +
+    "\nتاریخ: " + date;
   result.style.whiteSpace = "pre-line";
 
   if (status === "pending") {
