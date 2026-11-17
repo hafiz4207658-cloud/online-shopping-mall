@@ -130,11 +130,11 @@ async function loadData(){
    <td>
     <button class="edit" onclick="viewOrderDetails('${escapeHTML(o.id)}')">View Details</button>
     <select id="status-${escapeHTML(o.id)}">
-     <option value="Pending">Pending</option>
-     <option value="Processing">Processing</option>
-     <option value="Shipped">Shipped</option>
-     <option value="Delivered">Delivered</option>
-     <option value="Cancelled">Cancelled</option>
+     <option value="pending">Pending</option>
+     <option value="processing">Processing</option>
+     <option value="shipped">Shipped</option>
+     <option value="delivered">Delivered</option>
+     <option value="cancelled">Cancelled</option>
     </select>
     <button onclick="updateOrder('${escapeHTML(o.id)}')">Save Status</button>
    </td>
@@ -253,6 +253,7 @@ async function viewOrderDetails(id){
 
 async function updatePaymentStatus(id){
  const payment_status=document.getElementById("payment-status-"+id).value;
+ if(payment_status==="verified"&&!confirm("کیا آپ نے JazzCash، Easypaisa یا بینک میں رقم واقعی وصول ہونے کی تصدیق کر لی ہے؟ صرف Transaction ID دیکھ کر Verified نہ کریں۔"))return;
  const {error}=await db.from("orders").update({payment_status}).eq("id",id);
  if(error){alert("Payment status update error: "+error.message);return;}
  alert("Payment status updated.");loadData();
