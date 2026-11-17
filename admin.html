@@ -85,37 +85,55 @@ async function loginAdmin(){
 async function logout(){await db.auth.signOut();location.reload();}
 
 async function loadData(){
- const msg=
-document.getElementById("orders").innerHTML=orders.map(o=>`
- <tr>
- <td>${escapeHTML(o.customer_name)}</td>
- <td>${escapeHTML(o.phone)}</td>
- <td>${escapeHTML(o.city)}</td>
- <td>${escapeHTML(o.total)}</td>
- <td>${escapeHTML(o.status||"")}</td>
- <td>
- <button class="edit" onclick="viewOrderDetails('${escapeHTML(o.id)}')">View Details</button>
- <select id="status-${escapeHTML(o.id)}">
- <option value="Pending">Pending</option>
- <option value="Processing">Processing</option>
- <option value="Shipped">Shipped</option>
- <option value="Delivered">Delivered</option>
- <option value="Cancelled">Cancelled</option>
- </select>
- <button onclick="updateOrder('${escapeHTML(o.id)}')">Save</button>
- </td>
- </tr>`).join("");
+ const msg=document.getElementById("message");
+ msg.textContent="Loading products and orders...";
 
- const {data:orders,error:oError}=await db.from("orders").select("*").order("created_at",{ascending:false});
- if(oError){msg.textContent="Orders: "+oError.message;return;}
- document.getElementById("orders").innerHTML=orders.map(o=>`
- <tr><td>${escapeHTML(o.customer_name)}</td><td>${escapeHTML(o.phone)}</td><td>${escapeHTML(o.city)}</td><td>${escapeHTML(o.total)}</td>
- <td>${escapeHTML(o.status||"")}</td><td><select id="status-${escapeHTML(o.id)}">
- <option value="Pending">Pending</option><option value="Processing">Processing</option><option value="Shipped">Shipped</option>
- <option value="Delivered">Delivered</option><option value="Cancelled">Cancelled</option></select>
- <button onclick="updateOrder('${escapeHTML(o.id)}')">Save</button></td></tr>`).join("");
- orders.forEach(o=>{const s=document.getElementById("status-"+o.id);if(s)s.value=o.status||"Pending";});
- msg.textContent="Data loaded.";
+ const {data:products,error:pError}=await db.from("products")
+  .select("*").order("created_at",{ascending:false});
+ if(pError){msg.textContent="Products load error: "+pError.message;return;}
+
+ document.getElementById("products").innerHTML=(products||[]).map(p=>`
+  <tr>
+   <td>${p.image_url ? `<img class="product-img" src="${escapeHTML(p.image_url)}" alt="Product" onerror="this.style.display='none'>` : "No image"}</td>
+   <td>${escapeHTML(p.name)}</td>
+   <td>Rs. ${escapeHTML(p.price)}</td>
+   <td>${escapeHTML(p.stock)}</td>
+   <td>${p.is_active?"Yes":"No"}</td>
+   <td class="actions">
+    <button class="edit" data-id="${escapeHTML(p.id)}" onclick="editProduct(this)">Edit</button>
+    <button class="danger" data-id="${escapeHTML(p.id)}" onclick="deleteProduct(this)">Delete</button>
+   </td>
+  </tr>`).join("");
+
+ const {data:orders,error:oError}=await db.from("orders")
+  .select("*").order("created_at",{ascending:false});
+ if(oError){msg.textContent="Orders load error: "+oError.message;return;}
+
+ document.getElementById("orders").innerHTML=(orders||[]).map(o=>`
+  <tr>
+   <td>${escapeHTML(o.customer_name)}</td>
+   <td>${escapeHTML(o.phone)}</td>
+   <td>${escapeHTML(o.city)}</td>
+   <td>Rs. ${escapeHTML(o.total)}</td>
+   <td>${escapeHTML(o.status||"Pending")}</td>
+   <td>
+    <button class="edit" onclick="viewOrderDetails('${escapeHTML(o.id)}')">View Details</button>
+    <select id="status-${escapeHTML(o.id)}">
+     <option value="Pending">Pending</option>
+     <option value="Processing">Processing</option>
+     <option value="Shipped">Shipped</option>
+     <option value="Delivered">Delivered</option>
+     <option value="Cancelled">Cancelled</option>
+    </select>
+    <button onclick="updateOrder('${escapeHTML(o.id)}')">Save Status</button>
+   </td>
+  </tr>`).join("");
+
+ (orders||[]).forEach(o=>{
+  const select=document.getElementById("status-"+o.id);
+  if(select)select.value=o.status||"Pending";
+ });
+ msg.textContent=`Data loaded. Products: ${(products||[]).length} | Orders: ${(orders||[]).length}`;
 }
 
 async function loadChats(){
