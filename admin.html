@@ -62,7 +62,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <tbody id="products"></tbody></table></div></div>
 
 <div class="card"><h3>Customer Orders</h3><div class="tablewrap"><table>
-<thead><tr><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Payment Method</th><th>Transaction ID</th><th>Payment Status</th><th>Order Status</th><th>Update</th></tr></thead>
+<thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Payment Method</th><th>Transaction ID</th><th>Payment Status</th><th>Order Status</th><th>Update</th></tr></thead>
 <tbody id="orders"></tbody></table></div></div>
 </div></div>
 
@@ -111,6 +111,8 @@ async function loadData(){
 
  document.getElementById("orders").innerHTML=(orders||[]).map(o=>`
   <tr>
+   <td><strong>#${escapeHTML(o.id)}</strong></td>
+   <td>${o.created_at ? escapeHTML(new Date(o.created_at).toLocaleString("en-PK")) : "—"}</td>
    <td>${escapeHTML(o.customer_name)}</td>
    <td>${escapeHTML(o.phone)}</td>
    <td>${escapeHTML(o.city)}</td>
