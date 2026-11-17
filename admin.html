@@ -62,7 +62,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <tbody id="products"></tbody></table></div></div>
 
 <div class="card"><h3>Customer Orders</h3><div class="tablewrap"><table>
-<thead><tr><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+<thead><tr><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Payment Method</th><th>Transaction ID</th><th>Payment Status</th><th>Order Status</th><th>Update</th></tr></thead>
 <tbody id="orders"></tbody></table></div></div>
 </div></div>
 
@@ -115,6 +115,17 @@ async function loadData(){
    <td>${escapeHTML(o.phone)}</td>
    <td>${escapeHTML(o.city)}</td>
    <td>Rs. ${escapeHTML(o.total)}</td>
+   <td>${escapeHTML(o.payment_method||"Cash on Delivery")}</td>
+   <td>${escapeHTML(o.transaction_id||"—")}</td>
+   <td>
+    <select id="payment-status-${escapeHTML(o.id)}">
+     <option value="pending">Pending</option>
+     <option value="submitted">Submitted</option>
+     <option value="verified">Verified</option>
+     <option value="rejected">Rejected</option>
+    </select>
+    <button class="edit" onclick="updatePaymentStatus('${escapeHTML(o.id)}')">Save Payment</button>
+   </td>
    <td>${escapeHTML(o.status||"Pending")}</td>
    <td>
     <button class="edit" onclick="viewOrderDetails('${escapeHTML(o.id)}')">View Details</button>
@@ -132,6 +143,8 @@ async function loadData(){
  (orders||[]).forEach(o=>{
   const select=document.getElementById("status-"+o.id);
   if(select)select.value=o.status||"Pending";
+  const paymentSelect=document.getElementById("payment-status-"+o.id);
+  if(paymentSelect)paymentSelect.value=o.payment_status||"pending";
  });
  msg.textContent=`Data loaded. Products: ${(products||[]).length} | Orders: ${(orders||[]).length}`;
 }
@@ -238,6 +251,12 @@ async function viewOrderDetails(id){
  alert(details);
 }
 
+async function updatePaymentStatus(id){
+ const payment_status=document.getElementById("payment-status-"+id).value;
+ const {error}=await db.from("orders").update({payment_status}).eq("id",id);
+ if(error){alert("Payment status update error: "+error.message);return;}
+ alert("Payment status updated.");loadData();
+}
 async function updateOrder(id){
  const status=document.getElementById("status-"+id).value;const {error}=await db.from("orders").update({status}).eq("id",id);
  if(error){alert("Error: "+error.message);return;}alert("Order status updated.");loadData();
