@@ -147,13 +147,15 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
   </div>
 </footer>
 
-<div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">ادائیگی Cash on Delivery ہے۔</p></div></div>
-<div class="modal" id="checkoutModal"><div class="panel"><div class="drawerhead"><h2>Checkout / آرڈر مکمل کریں</h2><button class="close" onclick="closeCheckout()">✕</button></div><div class="notice">ادائیگی کا طریقہ: Cash on Delivery (سامان ملنے پر ادائیگی)</div>
+<div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">Cash on Delivery، JazzCash، Easypaisa اور Bank Transfer دستیاب ہیں۔</p></div></div>
+<div class="modal" id="checkoutModal"><div class="panel"><div class="drawerhead"><h2>Checkout / آرڈر مکمل کریں</h2><button class="close" onclick="closeCheckout()">✕</button></div><div class="notice" id="paymentInstructions">ادائیگی کا طریقہ منتخب کریں۔</div>
 <form id="orderForm">
 <div class="field"><label>Full Name / پورا نام *</label><input name="name" required></div>
 <div class="field"><label>Mobile Number / موبائل نمبر *</label><input name="phone" required placeholder="03XXXXXXXXX"></div>
 <div class="field"><label>City / شہر *</label><input name="city" required></div>
 <div class="field"><label>Complete Address / مکمل پتہ *</label><textarea name="address" required></textarea></div>
+<div class="field"><label>Payment Method / ادائیگی کا طریقہ *</label><select name="payment_method" id="paymentMethod" required onchange="updatePaymentInstructions()"><option value="Cash on Delivery">Cash on Delivery</option><option value="JazzCash">JazzCash</option><option value="Easypaisa">Easypaisa</option><option value="Bank Transfer">Bank Transfer — Allied Bank</option></select></div>
+<div class="field" id="transactionField" style="display:none"><label>Transaction ID / ٹرانزیکشن آئی ڈی *</label><input name="transaction_id" id="transactionId" placeholder="ادائیگی کے بعد Transaction ID درج کریں"></div>
 <div class="total"><span>Order Total</span><span id="checkoutTotal">Rs. 0</span></div>
 <button class="primary" id="placeOrderBtn" type="submit">PLACE ORDER</button>
 </form></div></div>
@@ -241,6 +243,26 @@ function openCart(){document.getElementById("cartOverlay").classList.add("show")
 function closeCart(){document.getElementById("cartOverlay").classList.remove("show");}
 function checkout(){if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}closeCart();document.getElementById("checkoutModal").classList.add("show");updateCart();}
 function closeCheckout(){document.getElementById("checkoutModal").classList.remove("show");}
+function updatePaymentInstructions(){
+  const method=document.getElementById("paymentMethod").value;
+  const box=document.getElementById("paymentInstructions");
+  const field=document.getElementById("transactionField");
+  const input=document.getElementById("transactionId");
+  if(method==="Cash on Delivery"){
+    box.textContent="Cash on Delivery: سامان ملنے پر رقم ادا کریں۔";
+    field.style.display="none";input.required=false;input.value="";
+  }else{
+    field.style.display="block";input.required=true;
+    if(method==="JazzCash"){
+      box.innerHTML="<b>JazzCash Account</b><br>Account Title: Muhammad Abubakar<br>Mobile: +92 329 4207658<br>رقم بھیجنے کے بعد Transaction ID درج کریں۔";
+    }else if(method==="Easypaisa"){
+      box.innerHTML="<b>Easypaisa Account</b><br>Account Title: Muhammad Abubakar<br>Mobile: +92 329 4207658<br>رقم بھیجنے کے بعد Transaction ID درج کریں۔";
+    }else{
+      box.innerHTML="<b>Allied Bank</b><br>Account Title: MUHAMMAD ABUBAKAR<br>IBAN: PK70ABPA0011299775620017<br>رقم بھیجنے کے بعد Transaction ID درج کریں۔";
+    }
+  }
+}
+
 function chooseCat(c){document.getElementById("category").value=c;renderProducts();document.getElementById("products").scrollIntoView({behavior:"smooth"});}
 
 /* Functions for the six clickable Why Shop With Us cards */
@@ -269,7 +291,9 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
       address:String(form.get("address")).trim(),
       city:String(form.get("city")).trim(),
       total,
-      payment_method:"Cash on Delivery",
+      payment_method:String(form.get("payment_method") || "Cash on Delivery"),
+      transaction_id:String(form.get("transaction_id") || "").trim() || null,
+      payment_status:String(form.get("payment_method")) === "Cash on Delivery" ? "pending" : "submitted",
       status:"pending"
     };
     const {data:order,error:orderError}=await db.from("orders").insert(orderData).select("id").single();
