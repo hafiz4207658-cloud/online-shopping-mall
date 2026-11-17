@@ -216,9 +216,14 @@ function save(){localStorage.setItem("osm_cart",JSON.stringify(cart));updateCart
 function findProduct(id){return products.find(p=>String(p.id)===String(id));}
 
 function addToCart(id){
-  const p=findProduct(id); if(!p)return;
+  const p=findProduct(id);
+  if(!p)return;
+  const available=Math.max(0,Math.floor(Number(p.stock)||0));
   const item=cart.find(i=>String(i.id)===String(id));
-  if(item)item.qty++; else cart.push({id:p.id,qty:1});
+  const current=item?Math.max(0,Math.floor(Number(item.qty)||0)):0;
+  if(available<1){alert("یہ پروڈکٹ فی الحال اسٹاک میں موجود نہیں۔");return;}
+  if(current>=available){alert("معذرت، اسٹاک میں صرف "+available+" عدد دستیاب ہیں۔");return;}
+  if(item)item.qty=current+1;else cart.push({id:p.id,qty:1});
   save();
 }
 function buyNow(id){addToCart(id);openCart();}
@@ -237,7 +242,18 @@ function updateCart(){
   localStorage.setItem("osm_cart",JSON.stringify(cart));
 }
 
-function changeQty(id,n){const x=cart.find(i=>String(i.id)===String(id));if(x){x.qty+=n;if(x.qty<=0)cart=cart.filter(i=>String(i.id)!==String(id));}save();}
+function changeQty(id,n){
+  const x=cart.find(i=>String(i.id)===String(id));
+  const p=findProduct(id);
+  if(x&&p){
+    const next=Math.floor(Number(x.qty)||0)+Number(n);
+    const available=Math.max(0,Math.floor(Number(p.stock)||0));
+    if(next<=0)cart=cart.filter(i=>String(i.id)!==String(id));
+    else if(next>available)alert("معذرت، اسٹاک میں صرف "+available+" عدد دستیاب ہیں۔");
+    else x.qty=next;
+  }
+  save();
+}
 function removeItem(id){cart=cart.filter(i=>String(i.id)!==String(id));save();}
 function openCart(){document.getElementById("cartOverlay").classList.add("show");updateCart();}
 function closeCart(){document.getElementById("cartOverlay").classList.remove("show");}
@@ -280,20 +296,42 @@ document.getElementById("search").addEventListener("input",renderProducts);
 document.getElementById("orderForm").addEventListener("submit", async e=>{
   e.preventDefault();
   if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}
+  const form=new FormData(e.target);
+  const customerName=String(form.get("name")||"").trim();
+  const phone=String(form.get("phone")||"").trim();
+  const city=String(form.get("city")||"").trim();
+  const address=String(form.get("address")||"").trim();
+  const method=String(form.get("payment_method")||"");
+  const transactionId=String(form.get("transaction_id")||"").trim();
+  if(!customerName||!phone||!city||!address){alert("براہِ کرم نام، موبائل نمبر، شہر اور مکمل پتہ درج کریں۔");return;}
+  if(!/^(03\d{9}|\+923\d{9}|923\d{9})$/.test(phone.replace(/[\s-]/g,""))){alert("درست پاکستانی موبائل نمبر درج کریں، مثلاً 03XXXXXXXXX۔");return;}
+  if(!["Cash on Delivery","JazzCash","Easypaisa","Bank Transfer"].includes(method)){alert("ادائیگی کا درست طریقہ منتخب کریں۔");return;}
+  if(method!=="Cash on Delivery"&&!transactionId){alert("ادائیگی کے بعد Transaction ID درج کریں۔");return;}
+  const items=[];
+  for(const item of cart){
+    const p=findProduct(item.id);
+    const qty=Math.floor(Number(item.qty));
+    const stock=Math.floor(Number(p?.stock));
+    const price=Number(p?.price);
+    if(!p||!Number.isInteger(qty)||qty<1||!Number.isFinite(stock)||qty>stock||!Number.isFinite(price)||price<=0){
+      alert("آپ کے کارٹ میں کسی پروڈکٹ کا اسٹاک یا قیمت تبدیل ہو گئی ہے۔ کارٹ دوبارہ چیک کریں۔");
+      await loadProducts();return;
+    }
+    items.push({product_id:p.id,product_name:p.name,quantity:qty,price});
+  }
+  const total=items.reduce((sum,i)=>sum+i.quantity*i.price,0);
+  if(!Number.isFinite(total)||total<=0){alert("آرڈر کی رقم درست نہیں۔");return;}
   const btn=document.getElementById("placeOrderBtn");btn.disabled=true;btn.textContent="PLEASE WAIT...";
   try{
-    const form=new FormData(e.target);
-    const items=cart.map(i=>{const p=findProduct(i.id);return {product_id:p.id,product_name:p.name,quantity:i.qty,price:Number(p.price)};});
-    const total=items.reduce((sum,i)=>sum+i.quantity*i.price,0);
     const orderData={
-      customer_name:String(form.get("name")).trim(),
-      phone:String(form.get("phone")).trim(),
-      address:String(form.get("address")).trim(),
-      city:String(form.get("city")).trim(),
+      customer_name:customerName,
+      phone,
+      address,
+      city,
       total,
-      payment_method:String(form.get("payment_method") || "Cash on Delivery"),
-      transaction_id:String(form.get("transaction_id") || "").trim() || null,
-      payment_status:String(form.get("payment_method")) === "Cash on Delivery" ? "pending" : "submitted",
+      payment_method:method,
+      transaction_id:transactionId || null,
+      payment_status:method === "Cash on Delivery" ? "pending" : "submitted",
       status:"pending"
     };
     const {data:order,error:orderError}=await db.from("orders").insert(orderData).select("id").single();
