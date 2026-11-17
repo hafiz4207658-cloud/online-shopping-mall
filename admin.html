@@ -61,7 +61,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Active</th><th>Actions</th></tr></thead>
 <tbody id="products"></tbody></table></div></div>
 
-<div class="card"><h3>Customer Orders</h3><div class="tablewrap"><table>
+<div class="card"><h3>Customer Orders</h3><input id="orderSearch" type="search" placeholder="آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں"><select id="orderStatusFilter"><option value="">تمام آرڈرز</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select><div class="tablewrap"><table>
 <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Payment Method</th><th>Transaction ID</th><th>Payment Status</th><th>Order Status</th><th>Update</th></tr></thead>
 <tbody id="orders"></tbody></table></div></div>
 </div></div>
@@ -110,7 +110,7 @@ async function loadData(){
  if(oError){msg.textContent="Orders load error: "+oError.message;return;}
 
  document.getElementById("orders").innerHTML=(orders||[]).map(o=>`
-  <tr>
+  <tr data-order-search="${escapeHTML([o.id,o.customer_name,o.phone,o.city].join(" "))}" data-order-status="${escapeHTML(String(o.status||"pending").toLowerCase())}">
    <td><strong>#${escapeHTML(o.id)}</strong></td>
    <td>${o.created_at ? escapeHTML(new Date(o.created_at).toLocaleString("en-PK")) : "—"}</td>
    <td>${escapeHTML(o.customer_name)}</td>
@@ -149,6 +149,7 @@ async function loadData(){
   if(paymentSelect)paymentSelect.value=o.payment_status||"pending";
  });
  msg.textContent=`Data loaded. Products: ${(products||[]).length} | Orders: ${(orders||[]).length}`;
+ filterOrders();
 }
 
 async function loadChats(){
@@ -263,6 +264,17 @@ async function updatePaymentStatus(id){
 async function updateOrder(id){
  const status=document.getElementById("status-"+id).value;const {error}=await db.from("orders").update({status}).eq("id",id);
  if(error){alert("Error: "+error.message);return;}alert("Order status updated.");loadData();
+}
+document.getElementById("orderSearch").addEventListener("input",filterOrders);
+document.getElementById("orderStatusFilter").addEventListener("change",filterOrders);
+function filterOrders(){
+ const q=document.getElementById("orderSearch").value.trim().toLowerCase();
+ const status=document.getElementById("orderStatusFilter").value;
+ document.querySelectorAll("#orders tr").forEach(row=>{
+  const matchesText=(row.dataset.orderSearch||"").toLowerCase().includes(q);
+  const matchesStatus=!status||row.dataset.orderStatus===status;
+  row.style.display=matchesText&&matchesStatus?"":"none";
+ });
 }
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 </script>
