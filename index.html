@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ur" dir="ltr">
 <head>
@@ -27,6 +28,25 @@ nav{border-top:1px solid #f3eee6}.navinner{max-width:1200px;margin:auto;padding:
 footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{max-width:1160px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.foot p{color:#d8c8ae;font-size:13px}
 .overlay{display:none;position:fixed;inset:0;background:#0007;z-index:10;justify-content:flex-end}.overlay.show{display:flex}.drawer{background:#fff;width:min(480px,100%);height:100%;overflow:auto;padding:22px}.drawerhead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}.close{background:#f5eee4}.cartrow{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.mini{width:58px;height:58px;background:var(--cream);display:grid;place-items:center;border-radius:10px;font-size:28px}.qty{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}.qty button{padding:4px 9px;background:#f5eee4}.total{display:flex;justify-content:space-between;font-weight:900;font-size:19px;margin:20px 0}.primary{background:var(--gold);color:#302316;width:100%;padding:14px}.secondary{background:#f5eee4;color:var(--ink)}
 .modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.panel{background:white;border-radius:18px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:22px}.panel h2{margin-top:0}.field{margin:12px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px}.field textarea{min-height:75px}.notice{background:#edf8f1;border:1px solid #cce8d5;padding:12px;border-radius:10px;font-size:13px;line-height:1.5}.empty{text-align:center;color:var(--muted);padding:35px 10px}.status{max-width:1160px;margin:12px auto;padding:0 20px;color:#76551e;font-size:13px}
+
+/* Why Shop With Us clickable cards */
+.why-card{
+  width:100%;
+  color:var(--ink);
+  font:inherit;
+  transition:background .25s,border-color .25s,transform .25s,box-shadow .25s;
+}
+.why-card:hover{
+  background:#f4e4c5;
+  border-color:var(--gold);
+  transform:translateY(-4px);
+  box-shadow:0 5px 15px #00000012;
+}
+.why-card:focus-visible{
+  outline:3px solid var(--gold);
+  outline-offset:3px;
+}
+
 @media(max-width:850px){.products{grid-template-columns:repeat(2,1fr)}.categories{grid-template-columns:repeat(3,1fr)}.hero{margin:16px 12px}.heroart{font-size:70px}}
 @media(max-width:560px){.head{flex-wrap:wrap;gap:10px}.brand{width:100%}.search{order:3;flex-basis:100%}.headbtn{margin-left:auto}.hero{padding:28px 22px;min-height:220px}.heroart{font-size:52px}.products{gap:10px}.photo{height:130px;font-size:52px}.pbody{padding:10px}.actions{flex-direction:column}.categories{gap:8px}.cat{font-size:12px;padding:13px 4px}}
 </style>
@@ -55,32 +75,51 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
   <section class="wrap" id="products"><div class="sectionhead"><h2>All Products</h2><span class="sub">ڈیٹابیس سے دستیاب مصنوعات</span></div>
     <div class="tools"><select id="category" onchange="renderProducts()"><option value="">All Categories</option><option>Honey & Natural</option><option>Fashion</option><option>Electronics</option><option>Home & Kitchen</option><option>Islamic Items</option><option>Beauty & Care</option></select><select id="sort" onchange="renderProducts()"><option value="">Sort: Featured</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option></select></div>
     <div class="products" id="productsGrid"></div>
-  </section><section id="track" class="wrap" style="padding:35px 15px;">
+  </section>
+
+<section id="track" class="wrap" style="padding:35px 15px;">
   <div class="sectionhead">
     <h2>Track Your Order</h2>
     <span class="sub">اپنے آرڈر کی صورتحال معلوم کریں</span>
   </div>
-
   <div style="max-width:500px;margin:20px auto;padding:22px;background:white;border:1px solid #ddd;border-radius:12px;">
     <label>آرڈر نمبر</label>
-    <input id="trackOrderId" type="number" placeholder="مثلاً 123"
-      style="width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;">
-
+    <input id="trackOrderId" type="number" placeholder="مثلاً 123" style="width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;">
     <label>موبائل نمبر</label>
-    <input id="trackPhone" type="tel" placeholder="وہی نمبر درج کریں جو آرڈر میں دیا تھا"
-      style="width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;">
-
-    <button type="button" onclick="trackOrder()"
-      style="width:100%;padding:13px;background:#198754;color:white;border:0;border-radius:7px;cursor:pointer;">
-      آرڈر چیک کریں
-    </button>
-
+    <input id="trackPhone" type="tel" placeholder="وہی نمبر درج کریں جو آرڈر میں دیا تھا" style="width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ccc;border-radius:7px;">
+    <button type="button" onclick="trackOrder()" style="width:100%;padding:13px;background:#198754;color:white;border:0;border-radius:7px;cursor:pointer;">آرڈر چیک کریں</button>
     <div id="trackingResult" style="margin-top:18px;line-height:2;"></div>
   </div>
 </section>
-  <section class="wrap" id="about"><div class="sectionhead"><h2>Why Shop With Us?</h2></div><div class="categories"><div class="cat"><span>🚚</span>Pakistan-wide delivery</div><div class="cat"><span>💵</span>Cash on Delivery</div><div class="cat"><span>🛡️</span>Customer-first service</div><div class="cat"><span>📞</span>Easy order support</div><div class="cat"><span>🛒</span>Simple shopping</div><div class="cat"><span>🎁</span>Great choices</div></div></section>
+
+  <!-- Updated: six clickable Why Shop With Us cards -->
+  <section class="wrap" id="about">
+    <div class="sectionhead"><h2>Why Shop With Us?</h2></div>
+    <div class="categories">
+      <button type="button" class="cat why-card" onclick="goToSection('track')">
+        <span>🚚</span>Pakistan-wide delivery
+      </button>
+      <button type="button" class="cat why-card" onclick="goToSection('products')">
+        <span>💵</span>Cash on Delivery
+      </button>
+      <button type="button" class="cat why-card" onclick="goToSection('contact')">
+        <span>🛡️</span>Customer-first service
+      </button>
+      <button type="button" class="cat why-card" onclick="openCustomerChat()">
+        <span>📞</span>Easy order support
+      </button>
+      <button type="button" class="cat why-card" onclick="goToSection('products')">
+        <span>🛒</span>Simple shopping
+      </button>
+      <button type="button" class="cat why-card" onclick="goToSection('categories')">
+        <span>🎁</span>Great choices
+      </button>
+    </div>
+  </section>
 </main>
+
 <footer id="contact"><div class="foot"><div><b>Z.Mart PK</b><p>Everything You Need, All in One Place.</p></div><div><b>Customer Support</b><p>WhatsApp: Add your business number<br>Email: Add your email address</p></div><div><b>Delivery & Payment</b><p>Pakistan delivery • Cash on Delivery</p></div></div></footer>
+
 <div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">ادائیگی Cash on Delivery ہے۔</p></div></div>
 <div class="modal" id="checkoutModal"><div class="panel"><div class="drawerhead"><h2>Checkout / آرڈر مکمل کریں</h2><button class="close" onclick="closeCheckout()">✕</button></div><div class="notice">ادائیگی کا طریقہ: Cash on Delivery (سامان ملنے پر ادائیگی)</div>
 <form id="orderForm">
@@ -91,6 +130,7 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
 <div class="total"><span>Order Total</span><span id="checkoutTotal">Rs. 0</span></div>
 <button class="primary" id="placeOrderBtn" type="submit">PLACE ORDER</button>
 </form></div></div>
+
 <script>
 const SUPABASE_URL = "https://hxyrmrypwvkrndoontnj.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oACOcsBAFOMzfV9kzP-egg_p5w-Aen2";
@@ -102,6 +142,7 @@ const money = n => "Rs. " + Number(n || 0).toLocaleString("en-PK");
 const statusBox = document.getElementById("status");
 
 function setStatus(message){ statusBox.textContent = message; }
+
 async function loadProducts(){
   setStatus("مصنوعات لوڈ ہو رہی ہیں...");
   const {data,error} = await db.from("products")
@@ -118,14 +159,15 @@ async function loadProducts(){
   updateCart();
   setStatus(products.length ? products.length + " مصنوعات دستیاب ہیں۔" : "ابھی ڈیٹابیس میں کوئی فعال پروڈکٹ موجود نہیں۔");
 }
+
 function renderProducts(){
   const q = document.getElementById("search").value.toLowerCase();
   const cat = document.getElementById("category").value;
   const sort = document.getElementById("sort").value;
   let list = products.filter(p => (!cat || p.category === cat) &&
     ((p.name || "").toLowerCase().includes(q) ||
- (p.category || "").toLowerCase().includes(q) ||
- (p.description || "").toLowerCase().includes(q)));
+     (p.category || "").toLowerCase().includes(q) ||
+     (p.description || "").toLowerCase().includes(q)));
   if(sort === "low") list.sort((a,b)=>Number(a.price)-Number(b.price));
   if(sort === "high") list.sort((a,b)=>Number(b.price)-Number(a.price));
   document.getElementById("productsGrid").innerHTML = list.length ? list.map(p => `
@@ -138,10 +180,12 @@ function renderProducts(){
       <button class="buy" onclick="buyNow('${String(p.id)}')">Buy Now</button></div></div>
     </article>`).join("") : '<div class="empty">اس کیٹیگری میں کوئی پروڈکٹ نہیں ملی۔</div>';
 }
+
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function escapeAttr(s){return escapeHtml(s);}
 function save(){localStorage.setItem("osm_cart",JSON.stringify(cart));updateCart();}
 function findProduct(id){return products.find(p=>String(p.id)===String(id));}
+
 function addToCart(id){
   const p=findProduct(id); if(!p)return;
   const item=cart.find(i=>String(i.id)===String(id));
@@ -149,6 +193,7 @@ function addToCart(id){
   save();
 }
 function buyNow(id){addToCart(id);openCart();}
+
 function updateCart(){
   cart=cart.filter(i=>findProduct(i.id));
   const count=cart.reduce((s,i)=>s+i.qty,0);
@@ -162,6 +207,7 @@ function updateCart(){
   document.getElementById("checkoutTotal").textContent=money(total);
   localStorage.setItem("osm_cart",JSON.stringify(cart));
 }
+
 function changeQty(id,n){const x=cart.find(i=>String(i.id)===String(id));if(x){x.qty+=n;if(x.qty<=0)cart=cart.filter(i=>String(i.id)!==String(id));}save();}
 function removeItem(id){cart=cart.filter(i=>String(i.id)!==String(id));save();}
 function openCart(){document.getElementById("cartOverlay").classList.add("show");updateCart();}
@@ -169,7 +215,19 @@ function closeCart(){document.getElementById("cartOverlay").classList.remove("sh
 function checkout(){if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}closeCart();document.getElementById("checkoutModal").classList.add("show");updateCart();}
 function closeCheckout(){document.getElementById("checkoutModal").classList.remove("show");}
 function chooseCat(c){document.getElementById("category").value=c;renderProducts();document.getElementById("products").scrollIntoView({behavior:"smooth"});}
+
+/* Functions for the six clickable Why Shop With Us cards */
+function goToSection(id){
+  const section=document.getElementById(id);
+  if(section) section.scrollIntoView({behavior:"smooth"});
+}
+function openCustomerChat(){
+  const chatButton=document.getElementById("osmChatButton");
+  if(chatButton) chatButton.click();
+}
+
 document.getElementById("search").addEventListener("input",renderProducts);
+
 document.getElementById("orderForm").addEventListener("submit", async e=>{
   e.preventDefault();
   if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}
@@ -199,7 +257,9 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
     alert("آرڈر جمع نہیں ہو سکا۔ ممکن ہے Supabase کی Insert Policy کی اجازت درکار ہو۔ براہِ کرم اسکرین پر آنے والی خرابی کا اسکرین شاٹ بھیجیں۔");
   }finally{btn.disabled=false;btn.textContent="PLACE ORDER";}
 });
+
 loadProducts();
+
 async function trackOrder() {
   const orderId = document.getElementById("trackOrderId").value.trim();
   const phone = document.getElementById("trackPhone").value.trim();
@@ -209,27 +269,21 @@ async function trackOrder() {
     result.textContent = "براہ کرم آرڈر نمبر اور موبائل نمبر دونوں درج کریں۔";
     return;
   }
-
   result.textContent = "آرڈر چیک ہو رہا ہے، انتظار کریں...";
-
   const { data, error } = await db.rpc("track_customer_order", {
     p_order_id: Number(orderId),
     p_phone: phone
   });
-
   if (error) {
     console.error(error);
     result.textContent = "معذرت، آرڈر چیک نہیں ہو سکا۔ دوبارہ کوشش کریں۔";
     return;
   }
-
   if (!data || data.length === 0) {
     result.textContent = "آرڈر نہیں ملا۔ آرڈر نمبر اور موبائل نمبر دوبارہ چیک کریں۔";
     return;
   }
-
   const order = data[0];
-
   const statuses = {
     pending: "آرڈر موصول ہو گیا ہے",
     processing: "آپ کا آرڈر تیار ہو رہا ہے",
@@ -237,18 +291,16 @@ async function trackOrder() {
     delivered: "آپ کا آرڈر پہنچا دیا گیا ہے",
     cancelled: "آپ کا آرڈر منسوخ ہو گیا ہے"
   };
-
   const status = String(order.order_status).toLowerCase();
   const date = new Date(order.order_date).toLocaleString("en-PK");
-
   result.textContent =
     "آرڈر نمبر: " + order.order_id +
     "\nحالت: " + (statuses[status] || order.order_status) +
     "\nکل رقم: Rs. " + order.order_total +
     "\nتاریخ: " + date;
-
   result.style.whiteSpace = "pre-line";
-}</script>
+}
+</script>
 
 <style>
 #osmChatButton{position:fixed;right:22px;bottom:22px;z-index:1000;background:#302316;color:#fff;border:2px solid #d9a441;border-radius:50px;padding:14px 20px;box-shadow:0 5px 22px #0003;font-size:15px}
@@ -267,6 +319,7 @@ async function trackOrder() {
 #osmChatSend{background:#d9a441;color:#302316;padding:10px 13px}#osmChatStatus{font-size:11px;color:#75695d;padding:0 12px 8px;background:#fff}
 @media(max-width:480px){#osmChatButton{right:14px;bottom:14px}#osmChatPanel{right:10px;bottom:76px}}
 </style>
+
 <button id="osmChatButton" type="button">💬 کسٹمر سپورٹ</button>
 <section id="osmChatPanel" aria-label="Customer support chat">
  <div id="osmChatHead"><strong>💬 Live Chat Support</strong><button id="osmChatClose" type="button">×</button></div>
@@ -276,6 +329,7 @@ async function trackOrder() {
  <div id="osmChatStatus">اپنا پیغام لکھیں۔</div>
  <form id="osmChatForm"><input id="osmChatText" maxlength="2000" placeholder="اپنا پیغام لکھیں..." autocomplete="off" required><button id="osmChatSend" type="submit">بھیجیں</button></form>
 </section>
+
 <script>
 (function(){
  const CHAT_URL="https://hxyrmrypwvkrndoontnj.supabase.co",CHAT_KEY="sb_publishable_oACOcsBAFOMzfV9kzP-egg_p5w-Aen2";
@@ -294,6 +348,5 @@ async function trackOrder() {
  $("osmChatForm").addEventListener("submit",async e=>{e.preventDefault();const message=$("osmChatText").value.trim();if(!message||sending)return;sending=true;$("osmChatSend").disabled=true;try{await ensureSession();const{error}=await chatDb.rpc("customer_chat_send",{p_token:token,p_message:message});if(error)throw error;$("osmChatText").value="";status.textContent="پیغام بھیج دیا گیا۔";await loadMessages();}catch(e){console.error(e);status.textContent="پیغام نہیں بھیجا جا سکا۔ دوبارہ کوشش کریں۔";}finally{sending=false;$("osmChatSend").disabled=false;}});
 })();
 </script>
-
 </body>
 </html>
