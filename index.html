@@ -26,6 +26,7 @@ nav{border-top:1px solid #f3eee6}.navinner{max-width:1200px;margin:auto;padding:
 .photo{height:170px;background:linear-gradient(135deg,#fbf4e7,#f1dfbd);display:grid;place-items:center;overflow:hidden;font-size:65px}.photo img{width:100%;height:100%;object-fit:cover}
 .pbody{padding:14px;display:flex;flex-direction:column;flex:1}.pbody h3{font-size:16px;margin:8px 0 7px}.desc{font-size:12px;color:var(--muted);line-height:1.5;min-height:36px}.price{font-size:18px;font-weight:900;margin:10px 0}.actions{display:flex;gap:8px;margin-top:auto}.add{background:var(--ink);color:#fff;flex:1}.buy{background:var(--gold);color:#302316;flex:1}.pill{font-size:11px;color:#79561e;background:#fff2d7;padding:5px 8px;border-radius:20px;align-self:flex-start}
 footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{max-width:1160px;margin:auto;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.foot p{color:#d8c8ae;font-size:13px}
+.foot a{color:#f4d58d;text-decoration:underline}.foot a:hover{color:#fff}
 .overlay{display:none;position:fixed;inset:0;background:#0007;z-index:10;justify-content:flex-end}.overlay.show{display:flex}.drawer{background:#fff;width:min(480px,100%);height:100%;overflow:auto;padding:22px}.drawerhead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}.close{background:#f5eee4}.cartrow{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.mini{width:58px;height:58px;background:var(--cream);display:grid;place-items:center;border-radius:10px;font-size:28px}.qty{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}.qty button{padding:4px 9px;background:#f5eee4}.total{display:flex;justify-content:space-between;font-weight:900;font-size:19px;margin:20px 0}.primary{background:var(--gold);color:#302316;width:100%;padding:14px}.secondary{background:#f5eee4;color:var(--ink)}
 .modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.panel{background:white;border-radius:18px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:22px}.panel h2{margin-top:0}.field{margin:12px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px}.field textarea{min-height:75px}.notice{background:#edf8f1;border:1px solid #cce8d5;padding:12px;border-radius:10px;font-size:13px;line-height:1.5}.empty{text-align:center;color:var(--muted);padding:35px 10px}.status{max-width:1160px;margin:12px auto;padding:0 20px;color:#76551e;font-size:13px}
 
@@ -118,7 +119,33 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
   </section>
 </main>
 
-<footer id="contact"><div class="foot"><div><b>Z.Mart PK</b><p>Everything You Need, All in One Place.</p></div><div><b>Customer Support</b><p>WhatsApp: Add your business number<br>Email: Add your email address</p></div><div><b>Delivery & Payment</b><p>Pakistan delivery • Cash on Delivery</p></div></div></footer>
+<footer id="contact">
+  <div class="foot">
+    <div>
+      <b>Z.Mart PK</b>
+      <p>Everything You Need, All in One Place.</p>
+    </div>
+    <div>
+      <b>Customer Support</b>
+      <p>
+        WhatsApp:
+        <a href="https://wa.me/923294207658?text=Assalam-o-Alaikum%2C%20mujhe%20Z.Mart%20PK%20se%20maloomat%20chahiye."
+           target="_blank" rel="noopener noreferrer">
+          +92 329 4207658
+        </a>
+        <br>
+        Email:
+        <a href="mailto:hafiz4207658@gmail.com">
+          hafiz4207658@gmail.com
+        </a>
+      </p>
+    </div>
+    <div>
+      <b>Delivery & Payment</b>
+      <p>Pakistan delivery • Cash on Delivery</p>
+    </div>
+  </div>
+</footer>
 
 <div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">ادائیگی Cash on Delivery ہے۔</p></div></div>
 <div class="modal" id="checkoutModal"><div class="panel"><div class="drawerhead"><h2>Checkout / آرڈر مکمل کریں</h2><button class="close" onclick="closeCheckout()">✕</button></div><div class="notice">ادائیگی کا طریقہ: Cash on Delivery (سامان ملنے پر ادائیگی)</div>
