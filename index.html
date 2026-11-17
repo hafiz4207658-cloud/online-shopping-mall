@@ -354,8 +354,8 @@ async function trackOrder() {
   const phone = document.getElementById("trackPhone").value.trim();
   const result = document.getElementById("trackingResult");
 
-  if (!orderId || !phone) {
-    result.textContent = "براہ کرم آرڈر نمبر اور موبائل نمبر دونوں درج کریں۔";
+  if (!orderId || !phone || !/^\\d+$/.test(orderId)) {
+    result.textContent = "براہ کرم درست آرڈر نمبر اور موبائل نمبر دونوں درج کریں۔";
     return;
   }
   result.textContent = "آرڈر چیک ہو رہا ہے، انتظار کریں...";
@@ -384,10 +384,43 @@ async function trackOrder() {
   const date = new Date(order.order_date).toLocaleString("en-PK");
   result.textContent =
     "آرڈر نمبر: " + order.order_id +
-    "\nحالت: " + (statuses[status] || order.order_status) +
-    "\nکل رقم: Rs. " + order.order_total +
-    "\nتاریخ: " + date;
+    "\\nحالت: " + (statuses[status] || order.order_status) +
+    "\\nکل رقم: Rs. " + order.order_total +
+    "\\nتاریخ: " + date;
   result.style.whiteSpace = "pre-line";
+
+  if (status === "pending") {
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "آرڈر منسوخ کریں";
+    cancelButton.style.cssText = "display:block;margin-top:14px;background:#b42318;color:#fff;padding:11px 16px;border-radius:8px;";
+    cancelButton.addEventListener("click", () => cancelCustomerOrder(order.order_id, phone, cancelButton));
+    result.appendChild(cancelButton);
+  }
+}
+
+async function cancelCustomerOrder(orderId, phone, button) {
+  if (!confirm("کیا آپ واقعی اپنا آرڈر منسوخ کرنا چاہتے ہیں؟ یہ عمل واپس نہیں ہوگا۔")) return;
+  button.disabled = true;
+  button.textContent = "منسوخ ہو رہا ہے...";
+  const { data, error } = await db.rpc("cancel_customer_order", {
+    p_order_id: Number(orderId),
+    p_phone: phone
+  });
+  if (error) {
+    console.error(error);
+    alert("آرڈر منسوخ نہیں ہو سکا۔ براہِ کرم دوبارہ کوشش کریں۔");
+    button.disabled = false;
+    button.textContent = "آرڈر منسوخ کریں";
+    return;
+  }
+  if (data === "cancelled") {
+    alert("آپ کا آرڈر کامیابی سے منسوخ ہو گیا ہے۔");
+    await trackOrder();
+  } else {
+    alert("یہ آرڈر منسوخ نہیں ہو سکتا۔ صرف Pending آرڈر منسوخ کیا جا سکتا ہے۔");
+    await trackOrder();
+  }
 }
 </script>
 
