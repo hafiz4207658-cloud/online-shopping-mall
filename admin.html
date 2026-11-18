@@ -165,6 +165,7 @@ async function loadData(){
      <option value="cancelled">Cancelled</option>
     </select>
     <button onclick="updateOrder('${escapeHTML(o.id)}')">Save Status</button>
+    <button class="danger" onclick="deleteOrder('${escapeHTML(o.id)}')">Delete Order</button>
    </td>
   </tr>`).join("");
 
@@ -176,6 +177,14 @@ async function loadData(){
  });
  msg.textContent=`Data loaded. Products: ${(products||[]).length} | Orders: ${(orders||[]).length}`;
  filterOrders();
+}
+
+async function deleteOrder(orderId){
+ if(!confirm("Kya aap Order #"+orderId+" aur us ke tamam items ko hamesha ke liye delete karna chahte hain? Ye wapas nahi aayega."))return;
+ const {error}=await db.rpc("admin_delete_order",{p_order_id:Number(orderId)});
+ if(error){alert("Order delete nahi hua: "+error.message+"\\nSupabase mein order delete SQL function setup karein.");return;}
+ alert("Order #"+orderId+" delete ho gaya.");
+ await loadData();
 }
 
 async function loadChats(){
