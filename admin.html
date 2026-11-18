@@ -33,6 +33,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <body>
 <div class="container">
 <h1>Z.Mart PK</h1><h2>Admin Panel</h2>
+<div style="max-width:220px;margin:10px auto"><button type="button" id="adminLanguageToggle" onclick="toggleAdminLanguage()">English</button></div>
 <div class="card" id="login"><h3>Admin Login</h3>
 <input id="email" type="email" placeholder="Admin Email"><input id="password" type="password" placeholder="Password">
 <button onclick="loginAdmin()">Login</button><button type="button" class="edit" onclick="sendPasswordReset()">Forgot Password? Email par reset link bhejein</button><p id="loginMessage"></p></div>
@@ -335,6 +336,23 @@ function filterOrders(){
   row.style.display=matchesText&&matchesStatus?"":"none";
  });
 }
+
+function toggleAdminLanguage(){const current=localStorage.getItem("zm_admin_language")||"ur";localStorage.setItem("zm_admin_language",current==="ur"?"en":"ur");location.reload();}
+function applyAdminLanguage(){
+ const english=(localStorage.getItem("zm_admin_language")||"ur")==="en";
+ document.documentElement.lang=english?"en":"ur";
+ const btn=document.getElementById("adminLanguageToggle");if(btn)btn.textContent=english?"اردو":"English";
+ const dict={
+ "Admin Panel":"ایڈمن پینل","Admin Login":"ایڈمن لاگ اِن","Login":"لاگ اِن","Forgot Password? Email par reset link bhejein":"پاس ورڈ بھول گئے؟ ای میل پر لنک بھیجیں","Naya Password Set Karein":"نیا پاس ورڈ مقرر کریں","Password Update Karein":"پاس ورڈ تبدیل کریں","Admin Dashboard":"ایڈمن ڈیش بورڈ","Refresh Data":"ڈیٹا تازہ کریں","Logout":"لاگ آؤٹ","Live Chat Support":"لائیو چیٹ سپورٹ","گاہکوں کے پیغامات لوڈ کرنے کے لیے Refresh Chats دبائیں۔":"گاہکوں کے پیغامات دیکھنے کے لیے چیٹس تازہ کریں۔","Refresh Chats":"چیٹس تازہ کریں","Customer Chats":"گاہکوں کی چیٹس","گاہک کی چیٹ منتخب کریں":"گاہک کی چیٹ منتخب کریں","پیغامات یہاں نظر آئیں گے۔":"پیغامات یہاں نظر آئیں گے۔","Add New Product":"نئی پروڈکٹ شامل کریں","Products":"پروڈکٹس","Image":"تصویر","Name":"نام","Price":"قیمت","Stock":"اسٹاک","Active":"فعال","Actions":"اختیارات","Customer Orders":"گاہکوں کے آرڈرز","تمام آرڈرز":"تمام آرڈرز","Order ID":"آرڈر نمبر","Date":"تاریخ","Customer":"گاہک","Phone":"فون","City":"شہر","Total":"کل رقم","Payment Method":"ادائیگی کا طریقہ","Transaction ID":"ٹرانزیکشن نمبر","Payment Status":"ادائیگی کی حالت","Order Status":"آرڈر کی حالت","Update":"تبدیل کریں","Pending":"زیرِ انتظار","Processing":"تیاری جاری","Shipped":"بھیج دیا گیا","Delivered":"پہنچا دیا گیا","Cancelled":"منسوخ","View Details":"تفصیل دیکھیں","Save Payment":"ادائیگی محفوظ کریں","Save Status":"حالت محفوظ کریں","Edit":"ترمیم","Delete":"حذف کریں","Yes":"ہاں","No":"نہیں","ابھی چیٹس لوڈ نہیں ہوئیں۔":"ابھی چیٹس لوڈ نہیں ہوئیں۔","ابھی کوئی گاہک چیٹ شروع نہیں ہوئی۔":"ابھی کوئی گاہک چیٹ شروع نہیں ہوئی۔","چیٹس تازہ ہیں۔":"چیٹس تازہ ہیں۔","چیٹس لوڈ ہو رہی ہیں...":"چیٹس لوڈ ہو رہی ہیں..."
+ };
+ const reverse={};Object.keys(dict).forEach(k=>reverse[dict[k]]=k);
+ const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+ while(n=walker.nextNode()){const k=n.nodeValue.trim();if(!k)continue;const v=english?(dict[k]||k):(reverse[k]||k);if(v!==k)n.nodeValue=n.nodeValue.replace(k,v);}
+ const placeholders={"Admin Email":"ایڈمن ای میل","Password":"پاس ورڈ","Naya password (kam az kam 6 characters)":"نیا پاس ورڈ (کم از کم 6 حروف)","Product Name":"پروڈکٹ کا نام","Description":"تفصیل","Price":"قیمت","Image URL":"تصویر کا لنک","Category":"کیٹیگری","Stock":"اسٹاک","آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں":"آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں","اپنا جواب لکھیں...":"اپنا جواب لکھیں..."};
+ const rev={};Object.keys(placeholders).forEach(k=>rev[placeholders[k]]=k);
+ document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{const k=el.placeholder;el.placeholder=english?(placeholders[k]||k):(rev[k]||k);});
+}
+window.addEventListener("DOMContentLoaded",applyAdminLanguage);
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 </script>
 </body></html>
