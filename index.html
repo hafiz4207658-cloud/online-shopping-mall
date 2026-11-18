@@ -70,6 +70,7 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
     <div class="brand">🛍️ <b>Z.Mart</b> PK</div>
     <div class="search"><input id="search" placeholder="Search products... / چیز تلاش کریں"><button onclick="renderProducts()">تلاش</button></div>
     <button class="headbtn" onclick="openCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+    <button class="headbtn" id="languageToggle" type="button" onclick="toggleLanguage()">اردو</button>
   </div>
   <nav><div class="navinner"><a href="#home">Home</a><a href="#categories">Categories</a><a href="#products">All Products</a><a href="#track">Track Order</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav>
 </header>
@@ -480,6 +481,81 @@ async function cancelCustomerOrder(orderId, phone, button) {
  $("osmChatName").addEventListener("change",async()=>{if(panel.classList.contains("open"))try{await ensureSession();status.textContent="نام محفوظ ہو گیا۔";}catch(e){console.error(e);}});
  $("osmChatForm").addEventListener("submit",async e=>{e.preventDefault();const message=$("osmChatText").value.trim();if(!message||sending)return;sending=true;$("osmChatSend").disabled=true;try{await ensureSession();const{error}=await chatDb.rpc("customer_chat_send",{p_token:token,p_message:message});if(error)throw error;$("osmChatText").value="";status.textContent="پیغام بھیج دیا گیا۔";await loadMessages();}catch(e){console.error(e);status.textContent="پیغام نہیں بھیجا جا سکا۔ دوبارہ کوشش کریں۔";}finally{sending=false;$("osmChatSend").disabled=false;}});
 })();
+</script>
+<script>
+/* Simple Urdu / English store language switch */
+let storeLanguage = localStorage.getItem("zm_store_language") || "en";
+const storeTranslations = {
+"پاکستان بھر میں ڈیلیوری دستیاب • Cash on Delivery":"Delivery available across Pakistan • Cash on Delivery",
+"تلاش":"Search","اپنی پسند کی چیز منتخب کریں":"Choose what you like",
+"ڈیٹابیس سے دستیاب مصنوعات":"Products available in our store",
+"اسٹور کی مصنوعات لوڈ ہو رہی ہیں...":"Loading store products...",
+"مصنوعات لوڈ ہو رہی ہیں...":"Loading products...",
+"مصنوعات لوڈ نہیں ہو سکیں۔ Supabase کی products ٹیبل کی Read Policy چیک کرنا ہوگی۔":"Products could not be loaded. Please check the products table read policy.",
+"مصنوعات لوڈ کرنے میں مسئلہ ہے۔":"There was a problem loading products.",
+"ابھی ڈیٹابیس میں کوئی فعال پروڈکٹ موجود نہیں۔":"No active products are available right now.",
+"اس کیٹیگری میں کوئی پروڈکٹ نہیں ملی۔":"No products found in this category.",
+"یہ پروڈکٹ فی الحال اسٹاک میں موجود نہیں۔":"This product is currently out of stock.",
+"معذرت، اسٹاک میں صرف ":"Sorry, only ",
+"عدد دستیاب ہیں۔":" item(s) available.",
+"آپ کا کارٹ خالی ہے۔":"Your cart is empty.",
+"آرڈر نمبر":"Order Number","موبائل نمبر":"Mobile Number",
+"وہی نمبر درج کریں جو آرڈر میں دیا تھا":"Enter the same number used for the order",
+"آرڈر چیک کریں":"Track Order","اپنے آرڈر کی صورتحال معلوم کریں":"Check your order status",
+"براہ کرم درست آرڈر نمبر اور موبائل نمبر دونوں درج کریں۔":"Please enter a valid order number and mobile number.",
+"آرڈر چیک ہو رہا ہے، انتظار کریں...":"Checking your order, please wait...",
+"معذرت، آرڈر چیک نہیں ہو سکا۔ دوبارہ کوشش کریں۔":"Sorry, the order could not be checked. Please try again.",
+"آرڈر نہیں ملا۔ آرڈر نمبر اور موبائل نمبر دوبارہ چیک کریں۔":"Order not found. Please check the order number and mobile number.",
+"آرڈر منسوخ کریں":"Cancel Order","کیا آپ واقعی اپنا آرڈر منسوخ کرنا چاہتے ہیں؟ یہ عمل واپس نہیں ہوگا۔":"Are you sure you want to cancel this order? This cannot be undone.",
+"آرڈر منسوخ نہیں ہو سکا۔ براہِ کرم دوبارہ کوشش کریں۔":"The order could not be cancelled. Please try again.",
+"آپ کا آرڈر کامیابی سے منسوخ ہو گیا ہے۔":"Your order has been cancelled successfully.",
+"یہ آرڈر منسوخ نہیں ہو سکتا۔ صرف Pending آرڈر منسوخ کیا جا سکتا ہے۔":"This order cannot be cancelled. Only pending orders can be cancelled.",
+"Cash on Delivery: سامان ملنے پر رقم ادا کریں۔":"Cash on Delivery: Pay when your parcel arrives.",
+"رقم بھیجنے کے بعد Transaction ID درج کریں۔":"Enter the Transaction ID after making the payment.",
+"براہِ کرم نام، موبائل نمبر، شہر اور مکمل پتہ درج کریں۔":"Please enter your name, mobile number, city and full address.",
+"درست پاکستانی موبائل نمبر درج کریں، مثلاً 03XXXXXXXXX۔":"Enter a valid Pakistani mobile number, e.g. 03XXXXXXXXX.",
+"ادائیگی کا درست طریقہ منتخب کریں۔":"Please select a valid payment method.",
+"ادائیگی کے بعد Transaction ID درج کریں۔":"Enter the Transaction ID after payment.",
+"آپ کے کارٹ میں کسی پروڈکٹ کا اسٹاک یا قیمت تبدیل ہو گئی ہے۔ کارٹ دوبارہ چیک کریں۔":"A product's stock or price has changed. Please check your cart again.",
+"آرڈر کی رقم درست نہیں۔":"The order total is invalid.",
+"آرڈر جمع نہیں ہو سکا۔ ممکن ہے Supabase کی Insert Policy کی اجازت درکار ہو۔ براہِ کرم اسکرین پر آنے والی خرابی کا اسکرین شاٹ بھیجیں۔":"Your order could not be submitted. Please try again or contact support.",
+"السلام علیکم! اپنا پیغام محفوظ طریقے سے بھیجا جائے گا۔":"Your message will be sent securely.",
+"چیٹ شروع نہیں ہو سکی۔ کچھ دیر بعد دوبارہ کوشش کریں۔":"Chat could not start. Please try again later.",
+"پیغام بھیج دیا گیا۔":"Message sent.",
+"پیغام نہیں بھیجا جا سکا۔ دوبارہ کوشش کریں۔":"Message could not be sent. Please try again."
+};
+const storeExactEnglish = {
+"تلاش":"Search","کسٹمر سپورٹ":"Customer Support","بھیجیں":"Send","آپ کا نام":"Your name","اپنا پیغام لکھیں...":"Type your message...",
+"اپنا پیغام لکھیں۔":"Write your message.","السلام علیکم! اپنا نام درج کریں اور ہمیں پیغام بھیجیں۔ ہم جلد جواب دیں گے。":"Welcome! Enter your name and send us a message. We will reply soon.",
+"السلام علیکم! ہماری کسٹمر سپورٹ میں خوش آمدید۔":"Welcome to our customer support!",
+"السلام علیکم! اپنا سوال یا پیغام یہاں بھیجیں۔":"Hello! Send your question or message here.",
+"آرڈر نمبر: ":"Order number: ","حالت: ":"Status: ","کل رقم: ":"Total: ","تاریخ: ":"Date: "
+};
+function applyStoreLanguage(){
+ const english=storeLanguage==="en";
+ document.documentElement.lang=english?"en":"ur";
+ document.documentElement.dir="ltr";
+ document.getElementById("languageToggle").textContent=english?"اردو":"English";
+ const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+ let node;
+ while(node=walker.nextNode()){
+   const raw=node.nodeValue, key=raw.trim();
+   if(!key)continue;
+   let translated=english?(storeTranslations[key]||storeExactEnglish[key]):Object.keys(storeTranslations).find(k=>storeTranslations[k]===key)||Object.keys(storeExactEnglish).find(k=>storeExactEnglish[k]===key);
+   if(translated)node.nodeValue=raw.replace(key,translated);
+ }
+ document.querySelectorAll("[placeholder]").forEach(el=>{
+   if(english){
+     const map={"Search products... / چیز تلاش کریں":"Search products...","مثلاً 123":"e.g. 123","وہی نمبر درج کریں جو آرڈر میں دیا تھا":"Enter the phone number used for the order","03XXXXXXXXX":"03XXXXXXXXX","آپ کا نام":"Your name","اپنا پیغام لکھیں...":"Type your message..."};
+     if(map[el.placeholder])el.placeholder=map[el.placeholder];
+   }else{
+     const map={"Search products...":"Search products... / چیز تلاش کریں","e.g. 123":"مثلاً 123","Enter the phone number used for the order":"وہی نمبر درج کریں جو آرڈر میں دیا تھا","Your name":"آپ کا نام","Type your message...":"اپنا پیغام لکھیں..."};
+     if(map[el.placeholder])el.placeholder=map[el.placeholder];
+   }
+ });
+}
+function toggleLanguage(){storeLanguage=storeLanguage==="en"?"ur":"en";localStorage.setItem("zm_store_language",storeLanguage);location.reload();}
+window.addEventListener("DOMContentLoaded",applyStoreLanguage);
 </script>
 </body>
 </html>
