@@ -63,7 +63,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Active</th><th>Actions</th></tr></thead>
 <tbody id="products"></tbody></table></div></div>
 
-<div class="card"><h3>Customer Orders</h3><input id="orderSearch" type="search" placeholder="آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں"><select id="orderStatusFilter"><option value="">تمام آرڈرز</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select><div class="tablewrap"><table>
+<div class="card"><h3>Customer Orders</h3><input id="orderSearch" type="search" oninput="filterOrders()" placeholder="آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں"><select id="orderStatusFilter" onchange="filterOrders()"><option value="">تمام آرڈرز</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select><div class="tablewrap"><table>
 <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Phone</th><th>City</th><th>Total</th><th>Payment Method</th><th>Transaction ID</th><th>Payment Status</th><th>Order Status</th><th>Update</th></tr></thead>
 <tbody id="orders"></tbody></table></div></div>
 </div></div>
@@ -328,15 +328,21 @@ async function updateOrder(id){
 document.getElementById("orderSearch").addEventListener("input",filterOrders);
 document.getElementById("orderStatusFilter").addEventListener("change",filterOrders);
 function filterOrders(){
- const q=(document.getElementById("orderSearch").value||"").toLocaleLowerCase().trim().replace(/\\s+/g," ");
+ const search=document.getElementById("orderSearch");
+ const statusSelect=document.getElementById("orderStatusFilter");
+ if(!search||!statusSelect)return;
+ const q=(search.value||"").toLocaleLowerCase().trim().replace(/\\s+/g," ");
  const digits=q.replace(/\\D/g,"");
- const status=document.getElementById("orderStatusFilter").value;
- document.querySelectorAll("#orders tr").forEach(row=>{
-  const cells=Array.from(row.cells).slice(0,9).map(cell=>(cell.innerText||cell.textContent||"").toLocaleLowerCase());
-  const searchable=cells.join(" ").replace(/\\s+/g," ");
-  const matchesText=!q||searchable.includes(q)||(digits.length>0&&searchable.replace(/\\D/g,"").includes(digits));
-  const matchesStatus=!status||(row.dataset.orderStatus||"").toLowerCase()===status;
-  row.style.display=matchesText&&matchesStatus?"":"none";
+ const selectedStatus=(statusSelect.value||"").toLowerCase();
+ const rows=document.querySelectorAll("#orders tr");
+ rows.forEach(row=>{
+  const values=Array.from(row.cells).map(cell=>(cell.innerText||cell.textContent||"").toLocaleLowerCase());
+  const searchable=values.join(" ").replace(/\\s+/g," ");
+  const numeric=searchable.replace(/\\D/g,"");
+  const textMatch=!q||searchable.includes(q)||(digits.length>0&&numeric.includes(digits));
+  const rowStatus=(row.dataset.orderStatus||"").toLowerCase();
+  const statusMatch=!selectedStatus||rowStatus===selectedStatus;
+  row.hidden=!(textMatch&&statusMatch);
  });
 }
 
