@@ -301,9 +301,20 @@ async function viewOrderDetails(id){
 async function updatePaymentStatus(id){
  const payment_status=document.getElementById("payment-status-"+id).value;
  if(payment_status==="verified"&&!confirm("کیا آپ نے JazzCash، Easypaisa یا بینک میں رقم واقعی وصول ہونے کی تصدیق کر لی ہے؟ صرف Transaction ID دیکھ کر Verified نہ کریں۔"))return;
+ const waWindow=payment_status==="verified"?window.open("about:blank","_blank"):null;
+ const {data:order,error:orderError}=await db.from("orders").select("customer_name,phone").eq("id",id).single();
+ if(orderError){if(waWindow)waWindow.close();alert("Order details could not be loaded: "+orderError.message);return;}
  const {error}=await db.from("orders").update({payment_status}).eq("id",id);
- if(error){alert("Payment status update error: "+error.message);return;}
- alert("Payment status updated.");loadData();
+ if(error){if(waWindow)waWindow.close();alert("Payment status update error: "+error.message);return;}
+ if(payment_status==="verified"){
+  let phone=String(order.phone||"").replace(/[^0-9]/g,"");
+  if(phone.startsWith("0"))phone="92"+phone.slice(1);
+  else if(phone.startsWith("3"))phone="92"+phone;
+  const message="Assalam-o-Alaikum "+(order.customer_name||"Customer")+",\\n\\nZ.Mart PK mein aapke order #"+id+" ki payment verify ho gayi hai. Aapka bohat shukriya!";
+  if(phone.length>=11&&waWindow){waWindow.location.href="https://wa.me/"+phone+"?text="+encodeURIComponent(message);alert("Payment Verified ho gayi. WhatsApp mein message tayyar hai; customer ko bhejne ke liye Send dabayein.");}
+  else{if(waWindow)waWindow.close();alert("Payment Verified ho gayi, lekin customer ka WhatsApp number durust nahi mila. Customer ko manually inform karein.");}
+ }else{if(waWindow)waWindow.close();alert("Payment status updated.");}
+ loadData();
 }
 async function updateOrder(id){
  const status=document.getElementById("status-"+id).value;
