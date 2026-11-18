@@ -271,23 +271,33 @@ function openCart(){document.getElementById("cartOverlay").classList.add("show")
 function closeCart(){document.getElementById("cartOverlay").classList.remove("show");}
 function checkout(){if(!cart.length){alert("آپ کا کارٹ خالی ہے۔");return;}closeCart();document.getElementById("checkoutModal").classList.add("show");updateCart();}
 function closeCheckout(){document.getElementById("checkoutModal").classList.remove("show");}
+function copyPaymentDetail(value){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(value).then(()=>alert("تفصیل کاپی ہو گئی۔")).catch(()=>alert("کاپی نہیں ہو سکی، نمبر خود کاپی کریں۔"));
+  }else{
+    alert("اس تفصیل کو خود کاپی کریں: "+value);
+  }
+}
 function updatePaymentInstructions(){
   const method=document.getElementById("paymentMethod").value;
   const box=document.getElementById("paymentInstructions");
   const field=document.getElementById("transactionField");
   const input=document.getElementById("transactionId");
+  const amount=document.getElementById("checkoutTotal").textContent;
   if(method==="Cash on Delivery"){
     box.textContent="Cash on Delivery: سامان ملنے پر رقم ادا کریں۔";
     field.style.display="none";input.required=false;input.value="";
   }else{
-    field.style.display="block";input.required=true;
+    field.style.display="block";input.required=true;input.minLength=4;
+    let details="";
     if(method==="JazzCash"){
-      box.innerHTML="<b>JazzCash Account</b><br>Account Title: Muhammad Abubakar<br>Mobile: +92 329 4207658<br>رقم بھیجنے کے بعد Transaction ID درج کریں۔";
+      details="<b>JazzCash پر ادائیگی کریں</b><br>Account Title: Muhammad Abubakar<br>Mobile: +92 329 4207658 <button type='button' class='secondary' onclick=\"copyPaymentDetail('+923294207658')\">نمبر کاپی کریں</button>";
     }else if(method==="Easypaisa"){
-      box.innerHTML="<b>Easypaisa Account</b><br>Account Title: Muhammad Abubakar<br>Mobile: +92 329 4207658<br>رقم بھیجنے کے بعد Transaction ID درج کریں۔";
+      details="<b>Easypaisa پر ادائیگی کریں</b><br>Account Title: Muhammad Abubakar<br>Mobile: +92 329 4207658 <button type='button' class='secondary' onclick=\"copyPaymentDetail('+923294207658')\">نمبر کاپی کریں</button>";
     }else{
-      box.innerHTML="<b>Allied Bank</b><br>Account Title: MUHAMMAD ABUBAKAR<br>IBAN: PK70ABPA0011299775620017<br>رقم بھیجنے کے بعد Transaction ID درج کریں۔";
+      details="<b>Allied Bank میں ادائیگی کریں</b><br>Account Title: MUHAMMAD ABUBAKAR<br>IBAN: PK70ABPA0011299775620017 <button type='button' class='secondary' onclick=\"copyPaymentDetail('PK70ABPA0011299775620017')\">IBAN کاپی کریں</button>";
     }
+    box.innerHTML=details+"<br><b>آپ کی ادائیگی کی رقم: "+escapeHtml(amount)+"</b><br>اوپر دیے گئے اکاؤنٹ میں پوری رقم بھیجیں۔ پھر اپنی رسید یا ایپ سے حاصل ہونے والی اصل Transaction ID درج کرکے Place Order دبائیں۔ صرف ID لکھنے سے ادائیگی Verified نہیں ہوتی؛ ہم اپنی طرف سے رقم چیک کریں گے۔";
   }
 }
 
@@ -318,7 +328,7 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
   if(!customerName||!phone||!city||!address){alert("براہِ کرم نام، موبائل نمبر، شہر اور مکمل پتہ درج کریں۔");return;}
   if(!/^(03\d{9}|\+923\d{9}|923\d{9})$/.test(phone.replace(/[\s-]/g,""))){alert("درست پاکستانی موبائل نمبر درج کریں، مثلاً 03XXXXXXXXX۔");return;}
   if(!["Cash on Delivery","JazzCash","Easypaisa","Bank Transfer"].includes(method)){alert("ادائیگی کا درست طریقہ منتخب کریں۔");return;}
-  if(method!=="Cash on Delivery"&&!transactionId){alert("ادائیگی کے بعد Transaction ID درج کریں۔");return;}
+  if(method!=="Cash on Delivery"&&transactionId.length<4){alert("ادائیگی کے بعد درست Transaction ID درج کریں۔");document.getElementById("transactionId").focus();return;}
   const items=[];
   for(const item of cart){
     const p=findProduct(item.id);
