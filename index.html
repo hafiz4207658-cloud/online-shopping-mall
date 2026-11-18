@@ -361,7 +361,7 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
     const rows=items.map(i=>({...i,order_id:order.id}));
     const {error:itemError}=await db.from("order_items").insert(rows);
     if(itemError)throw itemError;
-    alert(method === "Cash on Delivery" ? "آپ کا آرڈر موصول ہو گیا ہے۔\nOrder # "+order.id+"\nکل رقم: "+money(total) : "آپ کا آرڈر موصول ہو گیا ہے، لیکن ادائیگی ابھی تصدیق کے انتظار میں ہے۔ رقم چیک ہونے کے بعد آرڈر پر کارروائی ہوگی۔\nOrder # "+order.id+"\nکل رقم: "+money(total));
+    alert(method === "Cash on Delivery" ? "Your order has been received successfully.\\nآپ کا آرڈر کامیابی سے موصول ہو گیا ہے۔\\n\\nOrder # "+order.id+"\\nOrder Total / کل رقم: "+money(total) : "Your order has been received, but your payment is still pending verification. We will process your order after confirming receipt of the payment.\\nآپ کا آرڈر موصول ہو گیا ہے، لیکن ادائیگی ابھی تصدیق کے انتظار میں ہے۔ رقم موصول ہونے کی تصدیق کے بعد ہی آرڈر پر کارروائی ہوگی۔\\n\\nOrder # "+order.id+"\\nOrder Total / کل رقم: "+money(total));
     cart=[];save();closeCheckout();e.target.reset();
   }catch(err){
     console.error(err);
