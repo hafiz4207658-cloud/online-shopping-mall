@@ -328,11 +328,14 @@ async function updateOrder(id){
 document.getElementById("orderSearch").addEventListener("input",filterOrders);
 document.getElementById("orderStatusFilter").addEventListener("change",filterOrders);
 function filterOrders(){
- const q=document.getElementById("orderSearch").value.trim().toLowerCase();
+ const q=(document.getElementById("orderSearch").value||"").toLocaleLowerCase().trim().replace(/\\s+/g," ");
+ const digits=q.replace(/\\D/g,"");
  const status=document.getElementById("orderStatusFilter").value;
  document.querySelectorAll("#orders tr").forEach(row=>{
-  const matchesText=(row.dataset.orderSearch||"").toLowerCase().includes(q);
-  const matchesStatus=!status||row.dataset.orderStatus===status;
+  const cells=Array.from(row.cells).slice(0,9).map(cell=>(cell.innerText||cell.textContent||"").toLocaleLowerCase());
+  const searchable=cells.join(" ").replace(/\\s+/g," ");
+  const matchesText=!q||searchable.includes(q)||(digits.length>0&&searchable.replace(/\\D/g,"").includes(digits));
+  const matchesStatus=!status||(row.dataset.orderStatus||"").toLowerCase()===status;
   row.style.display=matchesText&&matchesStatus?"":"none";
  });
 }
