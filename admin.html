@@ -310,7 +310,8 @@ async function updateOrder(id){
  // Open a blank tab immediately so the browser allows the WhatsApp tab after the database update.
  const waWindow=window.open("about:blank","_blank");
  const {data:order,error:orderError}=await db.from("orders").select("customer_name,phone,payment_method,payment_status").eq("id",id).single();
- if(orderError){if(waWindow)waWindow.close();alert("Order details could not be loaded: "+orderError.message);return;}\n if(order.payment_method!=="Cash on Delivery"&&order.payment_status!=="verified"&&["processing","shipped","delivered"].includes(status)){if(waWindow)waWindow.close();alert("یہ پری پیڈ آرڈر ہے۔ رقم کی وصولی Admin میں Verified کرنے سے پہلے آرڈر کو Processing، Shipped یا Delivered نہیں کیا جا سکتا۔");return;}
+ if(orderError){if(waWindow)waWindow.close();alert("Order details could not be loaded: "+orderError.message);return;}
+ if(order.payment_method!=="Cash on Delivery"&&order.payment_status!=="verified"&&["processing","shipped","delivered"].includes(status)){if(waWindow)waWindow.close();alert("یہ پری پیڈ آرڈر ہے۔ رقم کی وصولی Admin میں Verified کرنے سے پہلے آرڈر کو Processing، Shipped یا Delivered نہیں کیا جا سکتا۔");return;}
  const {error}=await db.from("orders").update({status}).eq("id",id);
  if(error){if(waWindow)waWindow.close();alert("Error: "+error.message);return;}
  const phone=String(order.phone||"").replace(/[^0-9]/g,"");
