@@ -341,16 +341,66 @@ function toggleAdminLanguage(){const current=localStorage.getItem("zm_admin_lang
 function applyAdminLanguage(){
  const english=(localStorage.getItem("zm_admin_language")||"ur")==="en";
  document.documentElement.lang=english?"en":"ur";
+ document.documentElement.dir=english?"ltr":"rtl";
  const btn=document.getElementById("adminLanguageToggle");if(btn)btn.textContent=english?"اردو":"English";
- const dict={
- "Admin Panel":"ایڈمن پینل","Admin Login":"ایڈمن لاگ اِن","Login":"لاگ اِن","Forgot Password? Email par reset link bhejein":"پاس ورڈ بھول گئے؟ ای میل پر لنک بھیجیں","Naya Password Set Karein":"نیا پاس ورڈ مقرر کریں","Password Update Karein":"پاس ورڈ تبدیل کریں","Admin Dashboard":"ایڈمن ڈیش بورڈ","Refresh Data":"ڈیٹا تازہ کریں","Logout":"لاگ آؤٹ","Live Chat Support":"لائیو چیٹ سپورٹ","گاہکوں کے پیغامات لوڈ کرنے کے لیے Refresh Chats دبائیں۔":"گاہکوں کے پیغامات دیکھنے کے لیے چیٹس تازہ کریں۔","Refresh Chats":"چیٹس تازہ کریں","Customer Chats":"گاہکوں کی چیٹس","گاہک کی چیٹ منتخب کریں":"گاہک کی چیٹ منتخب کریں","پیغامات یہاں نظر آئیں گے۔":"پیغامات یہاں نظر آئیں گے۔","Add New Product":"نئی پروڈکٹ شامل کریں","Products":"پروڈکٹس","Image":"تصویر","Name":"نام","Price":"قیمت","Stock":"اسٹاک","Active":"فعال","Actions":"اختیارات","Customer Orders":"گاہکوں کے آرڈرز","تمام آرڈرز":"تمام آرڈرز","Order ID":"آرڈر نمبر","Date":"تاریخ","Customer":"گاہک","Phone":"فون","City":"شہر","Total":"کل رقم","Payment Method":"ادائیگی کا طریقہ","Transaction ID":"ٹرانزیکشن نمبر","Payment Status":"ادائیگی کی حالت","Order Status":"آرڈر کی حالت","Update":"تبدیل کریں","Pending":"زیرِ انتظار","Processing":"تیاری جاری","Shipped":"بھیج دیا گیا","Delivered":"پہنچا دیا گیا","Cancelled":"منسوخ","View Details":"تفصیل دیکھیں","Save Payment":"ادائیگی محفوظ کریں","Save Status":"حالت محفوظ کریں","Edit":"ترمیم","Delete":"حذف کریں","Yes":"ہاں","No":"نہیں","ابھی چیٹس لوڈ نہیں ہوئیں۔":"ابھی چیٹس لوڈ نہیں ہوئیں۔","ابھی کوئی گاہک چیٹ شروع نہیں ہوئی۔":"ابھی کوئی گاہک چیٹ شروع نہیں ہوئی۔","چیٹس تازہ ہیں۔":"چیٹس تازہ ہیں۔","چیٹس لوڈ ہو رہی ہیں...":"چیٹس لوڈ ہو رہی ہیں..."
+ const urToEn={
+ "گاہکوں کے پیغامات لوڈ کرنے کے لیے Refresh Chats دبائیں۔":"Press Refresh Chats to load customer messages.",
+ "گاہکوں کے پیغامات دیکھنے کے لیے چیٹس تازہ کریں۔":"Refresh chats to view customer messages.",
+ "چیٹس لوڈ ہو رہی ہیں...":"Loading chats...",
+ "ابھی چیٹس لوڈ نہیں ہوئیں۔":"Chats have not loaded yet.",
+ "ابھی کوئی گاہک چیٹ شروع نہیں ہوئی۔":"No customer chats yet.",
+ "چیٹس تازہ ہیں۔":"Chats are up to date.",
+ "چیٹس لوڈ نہیں ہو سکیں۔":"Could not load chats.",
+ "گاہک کی چیٹ منتخب کریں":"Select a customer chat",
+ "پیغامات یہاں نظر آئیں گے۔":"Messages will appear here.",
+ "Customer Chats":"Customer Chats",
+ "چیٹ: ":"Chat: ",
+ "آپ:":"You:",
+ "گاہک:":"Customer:",
+ "ابھی کوئی پیغام نہیں۔":"No messages yet.",
+ "پیغامات لوڈ ہو رہے ہیں...":"Loading messages...",
+ "اپنا جواب لکھیں...":"Type your reply...",
+ "جواب بھیجیں":"Send Reply",
+ "گاہکوں کی چیٹس":"Customer Chats",
+ "لائیو چیٹ سپورٹ":"Live Chat Support",
+ "ایڈمن ڈیش بورڈ":"Admin Dashboard",
+ "ڈیٹا تازہ کریں":"Refresh Data",
+ "لاگ آؤٹ":"Logout",
+ "نئی پروڈکٹ شامل کریں":"Add New Product",
+ "پروڈکٹس":"Products",
+ "گاہکوں کے آرڈرز":"Customer Orders",
+ "آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں":"Search by order number, name, mobile or city",
+ "تمام آرڈرز":"All Orders",
+ "آرڈر نمبر":"Order ID","تاریخ":"Date","گاہک":"Customer","فون":"Phone","شہر":"City","کل رقم":"Total",
+ "ادائیگی کا طریقہ":"Payment Method","ٹرانزیکشن نمبر":"Transaction ID","ادائیگی کی حالت":"Payment Status","آرڈر کی حالت":"Order Status",
+ "تبدیل کریں":"Update","زیرِ انتظار":"Pending","تیاری جاری":"Processing","بھیج دیا گیا":"Shipped","پہنچا دیا گیا":"Delivered","منسوخ":"Cancelled",
+ "تفصیل دیکھیں":"View Details","ادائیگی محفوظ کریں":"Save Payment","حالت محفوظ کریں":"Save Status","ترمیم":"Edit","حذف کریں":"Delete",
+ "ایڈمن لاگ اِن":"Admin Login","لاگ اِن":"Login","پاس ورڈ بھول گئے؟ ای میل پر لنک بھیجیں":"Forgot Password? Send reset link by email",
+ "نیا پاس ورڈ مقرر کریں":"Set New Password","پاس ورڈ تبدیل کریں":"Update Password"
  };
- const reverse={};Object.keys(dict).forEach(k=>reverse[dict[k]]=k);
- const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
- while(n=walker.nextNode()){const k=n.nodeValue.trim();if(!k)continue;const v=english?(dict[k]||k):(reverse[k]||k);if(v!==k)n.nodeValue=n.nodeValue.replace(k,v);}
- const placeholders={"Admin Email":"ایڈمن ای میل","Password":"پاس ورڈ","Naya password (kam az kam 6 characters)":"نیا پاس ورڈ (کم از کم 6 حروف)","Product Name":"پروڈکٹ کا نام","Description":"تفصیل","Price":"قیمت","Image URL":"تصویر کا لنک","Category":"کیٹیگری","Stock":"اسٹاک","آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں":"آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں","اپنا جواب لکھیں...":"اپنا جواب لکھیں..."};
- const rev={};Object.keys(placeholders).forEach(k=>rev[placeholders[k]]=k);
- document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{const k=el.placeholder;el.placeholder=english?(placeholders[k]||k):(rev[k]||k);});
+ const enToUr={};Object.keys(urToEn).forEach(k=>enToUr[urToEn[k]]=k);
+ function translateTextNode(node){
+  const raw=node.nodeValue,key=raw.trim();if(!key)return;
+  let value=english?(urToEn[key]||key):(enToUr[key]||key);
+  if(english&&key.startsWith("چیٹ: "))value="Chat: "+key.slice(5);
+  if(!english&&key.startsWith("Chat: "))value="چیٹ: "+key.slice(6);
+  if(value!==key)node.nodeValue=raw.replace(key,value);
+ }
+ function translateTree(root){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
+  while(n=walker.nextNode())translateTextNode(n);
+ }
+ translateTree(document.body);
+ const placeholderUrToEn={"اپنا جواب لکھیں...":"Type your reply...","آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں":"Search by order number, name, mobile or city","ایڈمن ای میل":"Admin Email","پاس ورڈ":"Password","نیا پاس ورڈ (کم از کم 6 حروف)":"New password (at least 6 characters)","پروڈکٹ کا نام":"Product Name","تفصیل":"Description","قیمت":"Price","تصویر کا لنک":"Image URL","کیٹیگری":"Category","اسٹاک":"Stock"};
+ document.querySelectorAll("input[placeholder],textarea[placeholder]").forEach(el=>{
+  const map=english?placeholderUrToEn:Object.fromEntries(Object.entries(placeholderUrToEn).map(([a,b])=>[b,a]));
+  if(map[el.placeholder])el.placeholder=map[el.placeholder];
+ });
+ document.querySelectorAll("option").forEach(el=>{const map=english?urToEn:enToUr;if(map[el.textContent.trim()])el.textContent=map[el.textContent.trim()];});
+ if(!window.adminLangObserver){
+  window.adminLangObserver=new MutationObserver(records=>{if((localStorage.getItem("zm_admin_language")||"ur")!=="en")return;records.forEach(record=>{record.addedNodes.forEach(node=>{if(node.nodeType===Node.TEXT_NODE)translateTextNode(node);else if(node.nodeType===Node.ELEMENT_NODE)translateTree(node);});});});
+  window.adminLangObserver.observe(document.body,{childList:true,subtree:true});
+ }
 }
 window.addEventListener("DOMContentLoaded",applyAdminLanguage);
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
