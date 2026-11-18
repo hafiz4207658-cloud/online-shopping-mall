@@ -191,10 +191,8 @@ async function deleteChat(event,button){
  event.stopPropagation();
  const token=button.dataset.token;
  if(!confirm("Kya aap is customer ki poori chat aur tamam messages delete karna chahte hain? Ye wapas nahi aa sakegi."))return;
- const {error:messageError}=await db.from("chat_messages").delete().eq("session_token",token);
- if(messageError){alert("Messages delete nahi huay: "+messageError.message);return;}
- const {error:sessionError}=await db.from("chat_sessions").delete().eq("session_token",token);
- if(sessionError){alert("Chat session delete nahi hui: "+sessionError.message);return;}
+ const {error:blockError}=await db.rpc("admin_delete_customer_chat",{p_token:token});
+ if(blockError){alert("Chat delete system abhi database mein setup nahi hua. Pehle diye gaye SQL ko Supabase mein run karein: "+blockError.message);return;}
  if(currentChatToken===token){currentChatToken=null;document.getElementById("chatTitle").textContent="گاہک کی چیٹ منتخب کریں";document.getElementById("chatMessages").textContent="پیغامات یہاں نظر آئیں گے۔";}
  alert("Chat delete ho gayi.");await loadChats();
 }
