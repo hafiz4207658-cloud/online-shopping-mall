@@ -18,7 +18,7 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 .chat-layout{display:grid;grid-template-columns:minmax(220px,1fr) minmax(280px,2fr);gap:15px}
 .chat-list{max-height:420px;overflow:auto;border:1px solid #ddd;border-radius:8px}
 .chat-session{padding:12px;border-bottom:1px solid #eee;cursor:pointer;background:#fff}
-.chat-session.active{background:#e8f2ed;border-left:4px solid #176b45}
+.chat-session.active{background:#e8f2ed;border-left:4px solid #176b45}.chat-session-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.chat-delete{width:auto;padding:6px 9px;margin:0;font-size:12px}
 .chat-session small{display:block;color:#666;margin-top:5px;overflow-wrap:anywhere}
 .chat-window{border:1px solid #ddd;border-radius:8px;padding:12px;min-height:300px;display:flex;flex-direction:column}
 .chat-messages{height:300px;overflow:auto;background:#f7f7f7;border-radius:8px;padding:10px}
@@ -35,7 +35,8 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <h1>Z.Mart PK</h1><h2>Admin Panel</h2>
 <div class="card" id="login"><h3>Admin Login</h3>
 <input id="email" type="email" placeholder="Admin Email"><input id="password" type="password" placeholder="Password">
-<button onclick="loginAdmin()">Login</button><p id="loginMessage"></p></div>
+<button onclick="loginAdmin()">Login</button><button type="button" class="edit" onclick="sendPasswordReset()">Forgot Password? Email par reset link bhejein</button><p id="loginMessage"></p></div>
+<div class="card" id="passwordReset" style="display:none"><h3>Naya Password Set Karein</h3><input id="newPassword" type="password" placeholder="Naya password (kam az kam 6 characters)"><button onclick="saveNewPassword()">Password Update Karein</button><p id="resetMessage"></p></div>
 
 <div id="dashboard">
 <div class="card"><h3>Admin Dashboard</h3><button onclick="loadData()">Refresh Data</button>
@@ -71,6 +72,12 @@ const SUPABASE_URL="https://hxyrmrypwvkrndoontnj.supabase.co";
 const SUPABASE_KEY="sb_publishable_oACOcsBAFOMzfV9kzP-egg_p5w-Aen2";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentChatToken=null;
+db.auth.onAuthStateChange((event)=>{
+ if(event==="PASSWORD_RECOVERY"){
+  document.getElementById("login").style.display="none";
+  document.getElementById("passwordReset").style.display="block";
+ }
+});
 
 async function loginAdmin(){
  const email=document.getElementById("email").value,password=document.getElementById("password").value;
@@ -83,6 +90,24 @@ async function loginAdmin(){
  loadData();loadChats();
 }
 async function logout(){await db.auth.signOut();location.reload();}
+async function sendPasswordReset(){
+ const email=document.getElementById("email").value.trim(),msg=document.getElementById("loginMessage");
+ if(!email){msg.textContent="Pehle Admin Email likhein.";return;}
+ msg.textContent="Reset link bheja ja raha hai...";
+ const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+"/admin.html"});
+ msg.textContent=error?("Reset link error: "+error.message):"Agar ye email registered hai to password reset link bhej diya gaya hai. Apni email inbox/spam check karein.";
+}
+async function saveNewPassword(){
+ const password=document.getElementById("newPassword").value,msg=document.getElementById("resetMessage");
+ if(password.length<6){msg.textContent="Password kam az kam 6 characters ka hona chahiye.";return;}
+ const {error}=await db.auth.updateUser({password});
+ if(error){msg.textContent="Password update nahi hua: "+error.message;return;}
+ msg.textContent="Password update ho gaya. Ab naye password se login karein.";
+ document.getElementById("newPassword").value="";
+ await db.auth.signOut();
+ document.getElementById("passwordReset").style.display="none";
+ document.getElementById("login").style.display="block";
+}
 
 async function loadData(){
  const msg=document.getElementById("message");
@@ -159,8 +184,19 @@ async function loadChats(){
  const box=document.getElementById("chatSessions");
  if(!data||!data.length){box.textContent="ابھی کوئی گاہک چیٹ شروع نہیں ہوئی۔";status.textContent="چیٹس تازہ ہیں۔";return;}
  box.innerHTML=data.map(s=>`<div class="chat-session ${currentChatToken===s.session_token?"active":""}" data-token="${escapeHTML(s.session_token)}" onclick="selectChat(this)">
- <strong>${escapeHTML(s.customer_name||"Customer")}</strong><small>${new Date(s.created_at).toLocaleString()}</small></div>`).join("");
+ <div class="chat-session-head"><strong>${escapeHTML(s.customer_name||"Customer")}</strong><button class="danger chat-delete" onclick="deleteChat(event, this)" data-token="${escapeHTML(s.session_token)}">Delete</button></div><small>${new Date(s.created_at).toLocaleString()}</small></div>`).join("");
  status.textContent=data.length+" چیٹس ملیں۔";
+}
+async function deleteChat(event,button){
+ event.stopPropagation();
+ const token=button.dataset.token;
+ if(!confirm("Kya aap is customer ki poori chat aur tamam messages delete karna chahte hain? Ye wapas nahi aa sakegi."))return;
+ const {error:messageError}=await db.from("chat_messages").delete().eq("session_token",token);
+ if(messageError){alert("Messages delete nahi huay: "+messageError.message);return;}
+ const {error:sessionError}=await db.from("chat_sessions").delete().eq("session_token",token);
+ if(sessionError){alert("Chat session delete nahi hui: "+sessionError.message);return;}
+ if(currentChatToken===token){currentChatToken=null;document.getElementById("chatTitle").textContent="گاہک کی چیٹ منتخب کریں";document.getElementById("chatMessages").textContent="پیغامات یہاں نظر آئیں گے۔";}
+ alert("Chat delete ho gayi.");await loadChats();
 }
 async function selectChat(el){
  currentChatToken=el.dataset.token;document.querySelectorAll(".chat-session").forEach(x=>x.classList.remove("active"));el.classList.add("active");
