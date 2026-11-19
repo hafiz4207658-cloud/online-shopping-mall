@@ -61,6 +61,9 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
 
 @media(max-width:850px){.products{grid-template-columns:repeat(2,1fr)}.categories{grid-template-columns:repeat(3,1fr)}.hero{margin:16px 12px}.heroart{font-size:70px}}
 @media(max-width:560px){.head{flex-wrap:wrap;gap:10px}.brand{width:100%}.search{order:3;flex-basis:100%}.headbtn{margin-left:auto}.hero{padding:28px 22px;min-height:220px}.heroart{font-size:52px}.products{gap:10px}.photo{height:130px;font-size:52px}.pbody{padding:10px}.actions{flex-direction:column}.categories{gap:8px}.cat{font-size:12px;padding:13px 4px}}
+
+.receipt-paper{width:min(680px,100%)}.receipt-paper table th,.receipt-paper table td{border:1px solid #ddd;text-align:left}.receipt-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.receipt-actions button{flex:1;min-width:130px}
+@media print{body>*{display:none!important}#orderReceiptModal{display:block!important;position:static!important;background:#fff!important;padding:0!important}#orderReceiptModal .panel{display:block!important;width:100%!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;padding:0!important}#orderReceiptModal .receipt-actions,#orderReceiptModal .drawerhead button{display:none!important}#receiptContent{display:block!important}}
 </style>
 </head>
 <body>
@@ -362,6 +365,7 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
     const rows=items.map(i=>({...i,order_id:order.id}));
     const {error:itemError}=await db.from("order_items").insert(rows);
     if(itemError)throw itemError;
+    showOrderReceipt(order.id,orderData,items);
     alert(method === "Cash on Delivery" ? "Your order has been received successfully.\\nآپ کا آرڈر کامیابی سے موصول ہو گیا ہے۔\\n\\nOrder # "+order.id+"\\nOrder Total / کل رقم: "+money(total) : "Your order has been received, but your payment is still pending verification. We will process your order after confirming receipt of the payment.\\nآپ کا آرڈر موصول ہو گیا ہے، لیکن ادائیگی ابھی تصدیق کے انتظار میں ہے۔ رقم موصول ہونے کی تصدیق کے بعد ہی آرڈر پر کارروائی ہوگی۔\\n\\nOrder # "+order.id+"\\nOrder Total / کل رقم: "+money(total));
     cart=[];save();closeCheckout();e.target.reset();
   }catch(err){
@@ -567,6 +571,18 @@ function applyStoreLanguage(){
 }
 function toggleLanguage(){storeLanguage=storeLanguage==="en"?"ur":"en";localStorage.setItem("zm_store_language",storeLanguage);location.reload();}
 window.addEventListener("DOMContentLoaded",applyStoreLanguage);
+
+function showOrderReceipt(orderId,order,items){
+ const existing=document.getElementById("orderReceiptModal");if(existing)existing.remove();
+ const rows=items.map(item=>'<tr><td>'+escapeHtml(item.product_name)+'</td><td>'+Number(item.quantity)+'</td><td>'+money(item.price)+'</td><td>'+money(Number(item.price)*Number(item.quantity))+'</td></tr>').join("");
+ const receipt=document.createElement("div");receipt.id="orderReceiptModal";receipt.className="modal show";
+ receipt.innerHTML='<div class="panel receipt-paper"><div class="drawerhead"><h2>Z.Mart PK — Order Receipt</h2><button type="button" class="close" id="receiptClose">✕</button></div><div id="receiptContent"><div class="notice">آپ کا آرڈر کامیابی سے موصول ہو گیا ہے۔</div><p><b>Order Number:</b> #'+escapeHtml(orderId)+'</p><p><b>Name:</b> '+escapeHtml(order.customer_name)+'</p><p><b>Mobile:</b> '+escapeHtml(order.phone)+'</p><p><b>City:</b> '+escapeHtml(order.city)+'</p><p><b>Address:</b> '+escapeHtml(order.address)+'</p><p><b>Payment:</b> '+escapeHtml(order.payment_method)+'</p><table style="width:100%;border-collapse:collapse" border="1" cellpadding="8"><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>'+rows+'</tbody></table><h3 style="text-align:right">Total: '+money(order.total)+'</h3><p>Order Status: Pending</p><p>Thank you for shopping with Z.Mart PK!</p></div><div class="receipt-actions"><button type="button" class="primary" id="receiptPrint">Print Receipt</button><button type="button" class="secondary" id="receiptWhatsApp">Share on WhatsApp</button><button type="button" class="secondary" id="receiptDone">Done</button></div></div>';
+ document.body.appendChild(receipt);
+ const close=()=>receipt.remove();
+ document.getElementById("receiptClose").onclick=close;document.getElementById("receiptDone").onclick=close;
+ document.getElementById("receiptPrint").onclick=()=>window.print();
+ document.getElementById("receiptWhatsApp").onclick=()=>{const text='Z.Mart PK Order Receipt\\nOrder #'+orderId+'\\nName: '+order.customer_name+'\\nTotal: '+money(order.total)+'\\nPayment: '+order.payment_method+'\\nStatus: Pending';window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');};
+}
 </script>
 </body>
 </html>
