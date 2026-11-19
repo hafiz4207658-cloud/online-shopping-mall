@@ -162,7 +162,7 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
   </div>
 </footer>
 
-<div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">Cash on Delivery، JazzCash، Easypaisa اور Bank Transfer دستیاب ہیں۔</p></div></div>
+<div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()"><div class="drawer"><div class="drawerhead"><h2>Your Cart</h2><button class="close" onclick="closeCart()">✕</button></div><div id="cartItems"></div><div id="cartPriceBreakdown"></div><div class="total"><span>Total</span><span id="cartTotal">Rs. 0</span></div><button class="primary" onclick="checkout()">PROCEED TO CHECKOUT</button><p class="sub">Cash on Delivery، JazzCash، Easypaisa اور Bank Transfer دستیاب ہیں۔</p></div></div>
 <div class="modal" id="checkoutModal"><div class="panel"><div class="drawerhead"><h2>Checkout / آرڈر مکمل کریں</h2><button class="close" onclick="closeCheckout()">✕</button></div><div class="notice" id="paymentInstructions">ادائیگی کا طریقہ منتخب کریں۔</div>
 <form id="orderForm">
 <div class="field"><label>Full Name / پورا نام *</label><input name="name" required></div>
@@ -171,7 +171,7 @@ footer{background:#302316;color:#f8eddb;margin-top:55px;padding:35px 20px}.foot{
 <div class="field"><label>Complete Address / مکمل پتہ *</label><textarea name="address" required></textarea></div>
 <div class="field"><label>Payment Method / ادائیگی کا طریقہ *</label><select name="payment_method" id="paymentMethod" required onchange="updatePaymentInstructions()"><option value="Cash on Delivery">Cash on Delivery</option><option value="JazzCash">JazzCash</option><option value="Easypaisa">Easypaisa</option><option value="Bank Transfer">Bank Transfer — Allied Bank</option></select></div>
 <div class="field" id="transactionField" style="display:none"><label>Transaction ID / ٹرانزیکشن آئی ڈی *</label><input name="transaction_id" id="transactionId" placeholder="ادائیگی کے بعد Transaction ID درج کریں"></div>
-<div class="total"><span>Order Total</span><span id="checkoutTotal">Rs. 0</span></div>
+<div id="checkoutPriceBreakdown"></div><div class="total"><span>Order Total</span><span id="checkoutTotal">Rs. 0</span></div>
 <button class="primary" id="placeOrderBtn" type="submit">PLACE ORDER</button>
 </form></div></div>
 
@@ -190,7 +190,7 @@ function setStatus(message){ statusBox.textContent = message; }
 async function loadProducts(){
   setStatus("مصنوعات لوڈ ہو رہی ہیں...");
   const {data,error} = await db.from("products")
-    .select("id,name,description,price,image_url,category,stock,is_active,created_at")
+    .select("id,name,description,price,image_url,category,stock,is_active,delivery_charges,created_at")
     .eq("is_active", true).order("created_at", {ascending:false});
   if(error){
     console.error(error);
@@ -247,13 +247,18 @@ function updateCart(){
   cart=cart.filter(i=>findProduct(i.id));
   const count=cart.reduce((s,i)=>s+i.qty,0);
   document.getElementById("cartCount").textContent=count;
-  let total=0;
+  let subtotal=0,deliveryTotal=0;
   document.getElementById("cartItems").innerHTML=cart.length?cart.map(i=>{
-    const p=findProduct(i.id); total+=Number(p.price)*i.qty;
-    return `<div class="cartrow"><div class="mini">🛍️</div><div style="flex:1"><b>${escapeHtml(p.name)}</b><div>${money(p.price)}</div><div class="qty"><button onclick="changeQty('${String(p.id)}',-1)">−</button>${i.qty}<button onclick="changeQty('${String(p.id)}',1)">+</button><button class="secondary" onclick="removeItem('${String(p.id)}')">Remove</button></div></div></div>`;
+    const p=findProduct(i.id); subtotal+=Number(p.price)*i.qty; deliveryTotal+=Math.max(0,Number(p.delivery_charges)||0);
+    return `<div class="cartrow"><div class="mini">🛍️</div><div style="flex:1"><b>${escapeHtml(p.name)}</b><div>${money(p.price)}</div><div class="sub">${Number(p.delivery_charges)>0?"Delivery: "+money(p.delivery_charges):"Free Delivery"}</div><div class="qty"><button onclick="changeQty('${String(p.id)}',-1)">−</button>${i.qty}<button onclick="changeQty('${String(p.id)}',1)">+</button><button class="secondary" onclick="removeItem('${String(p.id)}')">Remove</button></div></div></div>`;
   }).join(""):'<div class="empty">آپ کا کارٹ خالی ہے۔</div>';
-  document.getElementById("cartTotal").textContent=money(total);
-  document.getElementById("checkoutTotal").textContent=money(total);
+  const grandTotal=subtotal+deliveryTotal;
+  document.getElementById("cartTotal").textContent=money(grandTotal);
+  document.getElementById("checkoutTotal").textContent=money(grandTotal);
+  const summary=document.getElementById("cartPriceBreakdown");
+  if(summary)summary.innerHTML='<div class="total"><span>Products Subtotal</span><span>'+money(subtotal)+'</span></div><div class="total"><span>Delivery Charges</span><span>'+(deliveryTotal?money(deliveryTotal):"Free")+'</span></div><div class="total"><span>Grand Total</span><span>'+money(grandTotal)+'</span></div>';
+  const checkoutSummary=document.getElementById("checkoutPriceBreakdown");
+  if(checkoutSummary)checkoutSummary.innerHTML='<div class="total"><span>Products Subtotal</span><span>'+money(subtotal)+'</span></div><div class="total"><span>Delivery Charges</span><span>'+(deliveryTotal?money(deliveryTotal):"Free")+'</span></div>';
   localStorage.setItem("osm_cart",JSON.stringify(cart));
 }
 
@@ -345,7 +350,9 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
     }
     items.push({product_id:p.id,product_name:p.name,quantity:qty,price});
   }
-  const total=items.reduce((sum,i)=>sum+i.quantity*i.price,0);
+  const subtotal=items.reduce((sum,i)=>sum+i.quantity*i.price,0);
+  const deliveryTotal=cart.reduce((sum,item)=>sum+Math.max(0,Number(findProduct(item.id)?.delivery_charges)||0),0);
+  const total=subtotal+deliveryTotal;
   if(!Number.isFinite(total)||total<=0){alert("آرڈر کی رقم درست نہیں۔");return;}
   const btn=document.getElementById("placeOrderBtn");btn.disabled=true;btn.textContent="PLEASE WAIT...";
   try{
@@ -355,6 +362,8 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
       address,
       city,
       total,
+      subtotal,
+      delivery_charges:deliveryTotal,
       payment_method:method,
       transaction_id:transactionId || null,
       payment_status:method === "Cash on Delivery" ? "pending" : "submitted",
@@ -366,7 +375,6 @@ document.getElementById("orderForm").addEventListener("submit", async e=>{
     const {error:itemError}=await db.from("order_items").insert(rows);
     if(itemError)throw itemError;
     showOrderReceipt(order.id,orderData,items);
-    alert(method === "Cash on Delivery" ? "Your order has been received successfully.\\nآپ کا آرڈر کامیابی سے موصول ہو گیا ہے۔\\n\\nOrder # "+order.id+"\\nOrder Total / کل رقم: "+money(total) : "Your order has been received, but your payment is still pending verification. We will process your order after confirming receipt of the payment.\\nآپ کا آرڈر موصول ہو گیا ہے، لیکن ادائیگی ابھی تصدیق کے انتظار میں ہے۔ رقم موصول ہونے کی تصدیق کے بعد ہی آرڈر پر کارروائی ہوگی۔\\n\\nOrder # "+order.id+"\\nOrder Total / کل رقم: "+money(total));
     cart=[];save();closeCheckout();e.target.reset();
   }catch(err){
     console.error(err);
@@ -576,7 +584,7 @@ function showOrderReceipt(orderId,order,items){
  const existing=document.getElementById("orderReceiptModal");if(existing)existing.remove();
  const rows=items.map(item=>'<tr><td>'+escapeHtml(item.product_name)+'</td><td>'+Number(item.quantity)+'</td><td>'+money(item.price)+'</td><td>'+money(Number(item.price)*Number(item.quantity))+'</td></tr>').join("");
  const receipt=document.createElement("div");receipt.id="orderReceiptModal";receipt.className="modal show";
- receipt.innerHTML='<div class="panel receipt-paper"><div class="drawerhead"><h2>Z.Mart PK — Order Receipt</h2><button type="button" class="close" id="receiptClose">✕</button></div><div id="receiptContent"><div class="notice">آپ کا آرڈر کامیابی سے موصول ہو گیا ہے۔</div><p><b>Order Number:</b> #'+escapeHtml(orderId)+'</p><p><b>Name:</b> '+escapeHtml(order.customer_name)+'</p><p><b>Mobile:</b> '+escapeHtml(order.phone)+'</p><p><b>City:</b> '+escapeHtml(order.city)+'</p><p><b>Address:</b> '+escapeHtml(order.address)+'</p><p><b>Payment:</b> '+escapeHtml(order.payment_method)+'</p><table style="width:100%;border-collapse:collapse" border="1" cellpadding="8"><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>'+rows+'</tbody></table><h3 style="text-align:right">Total: '+money(order.total)+'</h3><p>Order Status: Pending</p><p>Thank you for shopping with Z.Mart PK!</p></div><div class="receipt-actions"><button type="button" class="primary" id="receiptPrint">Print Receipt</button><button type="button" class="secondary" id="receiptWhatsApp">Share on WhatsApp</button><button type="button" class="secondary" id="receiptDone">Done</button></div></div>';
+ receipt.innerHTML='<div class="panel receipt-paper"><div class="drawerhead"><h2>Z.Mart PK — Order Receipt</h2><button type="button" class="close" id="receiptClose">✕</button></div><div id="receiptContent"><div class="notice">آپ کا آرڈر کامیابی سے موصول ہو گیا ہے۔</div><p><b>Order Number:</b> #'+escapeHtml(orderId)+'</p><p><b>Name:</b> '+escapeHtml(order.customer_name)+'</p><p><b>Mobile:</b> '+escapeHtml(order.phone)+'</p><p><b>City:</b> '+escapeHtml(order.city)+'</p><p><b>Address:</b> '+escapeHtml(order.address)+'</p><p><b>Payment:</b> '+escapeHtml(order.payment_method)+'</p><table style="width:100%;border-collapse:collapse" border="1" cellpadding="8"><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Amount</th></tr></thead><tbody>'+rows+'</tbody></table><p style="text-align:right"><b>Products Subtotal:</b> '+money(order.subtotal??items.reduce((s,i)=>s+Number(i.price)*Number(i.quantity),0))+'</p><p style="text-align:right"><b>Delivery Charges:</b> '+(Number(order.delivery_charges)>0?money(order.delivery_charges):"Free") +'</p><h3 style="text-align:right">Total: '+money(order.total)+'</h3><p>Order Status: Pending</p><p>Thank you for shopping with Z.Mart PK!</p></div><div class="receipt-actions"><button type="button" class="primary" id="receiptPrint">Print Receipt</button><button type="button" class="secondary" id="receiptWhatsApp">Share on WhatsApp</button><button type="button" class="secondary" id="receiptDone">Done</button></div></div>';
  document.body.appendChild(receipt);
  const close=()=>receipt.remove();
  document.getElementById("receiptClose").onclick=close;document.getElementById("receiptDone").onclick=close;
