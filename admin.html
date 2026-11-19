@@ -257,47 +257,17 @@ async function deleteProduct(button){
  const {error}=await db.from("products").delete().eq("id",id);if(error){alert("Delete error: "+error.message);return;}alert("Product deleted.");loadData();
 }
 async function viewOrderDetails(id){
- const {data:o,error:oError}=await db
- .from("orders")
- .select("*")
- .eq("id",id)
- .single();
-
- if(oError){
-  alert("Order error: "+oError.message);
-  return;
- }
-
- const {data:items,error:iError}=await db
- .from("order_items")
- .select("product_name,quantity,price")
- .eq("order_id",id);
-
- if(iError){
-  alert("Items error: "+iError.message);
-  return;
- }
-
- let details="ORDER DETAILS\n\n";
- details+="Order ID: "+o.id+"\n";
- details+="Customer: "+(o.customer_name||"")+"\n";
- details+="Phone: "+(o.phone||"")+"\n";
- details+="Address: "+(o.address||"")+"\n";
- details+="City: "+(o.city||"")+"\n";
- details+="Date: "+(o.created_at||"")+"\n";
- details+="Status: "+(o.status||"")+"\n\n";
- details+="ORDER ITEMS\n";
-
- (items||[]).forEach(item=>{
-  details+="\nProduct: "+item.product_name;
-  details+="\nQuantity: "+item.quantity;
-  details+="\nPrice: Rs. "+item.price+"\n";
- });
-
- details+="\nTOTAL: Rs. "+o.total;
- alert(details);
+ const printWindow=window.open("about:blank","_blank");
+ if(!printWindow){alert("Print receipt ke liye browser mein popups allow karein.");return;}
+ const {data:o,error:oError}=await db.from("orders").select("*").eq("id",id).single();
+ if(oError){printWindow.close();alert("Order error: "+oError.message);return;}
+ const {data:items,error:iError}=await db.from("order_items").select("product_name,quantity,price").eq("order_id",id);
+ if(iError){printWindow.close();alert("Items error: "+iError.message);return;}
+ const rows=(items||[]).map(item=>'<tr><td>'+escapeHTML(item.product_name)+'</td><td>'+escapeHTML(item.quantity)+'</td><td>Rs. '+escapeHTML(item.price)+'</td><td>Rs. '+escapeHTML(Number(item.quantity)*Number(item.price))+'</td></tr>').join("");
+ const date=o.created_at?new Date(o.created_at).toLocaleString("en-PK"):"—";
+ printWindow.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Z.Mart PK - Order #'+escapeHTML(o.id)+'</title><style>body{font-family:Arial,sans-serif;color:#222;padding:28px;max-width:800px;margin:auto}h1,h2{text-align:center;color:#176b45}.meta{line-height:1.8;margin:24px 0}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #ccc;padding:10px;text-align:left}th{background:#f1f5f2}.total{text-align:right;font-size:20px;font-weight:bold;margin-top:20px}.print{text-align:center;margin:20px}button{padding:10px 24px;background:#176b45;color:white;border:0;border-radius:5px;cursor:pointer}@media print{.print{display:none}body{padding:0}}</style></head><body><h1>Z.Mart PK</h1><h2>Order Receipt</h2><div class="meta"><b>Order ID:</b> #'+escapeHTML(o.id)+'<br><b>Date:</b> '+escapeHTML(date)+'<br><b>Customer:</b> '+escapeHTML(o.customer_name||"")+'<br><b>Phone:</b> '+escapeHTML(o.phone||"")+'<br><b>Address:</b> '+escapeHTML(o.address||"")+'<br><b>City:</b> '+escapeHTML(o.city||"")+'<br><b>Payment:</b> '+escapeHTML(o.payment_method||"Cash on Delivery")+'<br><b>Payment Status:</b> '+escapeHTML(o.payment_status||"pending")+'<br><b>Order Status:</b> '+escapeHTML(o.status||"pending")+'</div><table><thead><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Amount</th></tr></thead><tbody>'+rows+'</tbody></table><div class="total">Total: Rs. '+escapeHTML(o.total)+'</div><p>Thank you for shopping with Z.Mart PK!</p><div class="print"><button onclick="window.print()">Print Receipt</button></div></body></html>');
+ printWindow.document.close();
 }
-
 async function updatePaymentStatus(id){
  const payment_status=document.getElementById("payment-status-"+id).value;
  if(payment_status==="verified"&&!confirm("کیا آپ نے JazzCash، Easypaisa یا بینک میں رقم واقعی وصول ہونے کی تصدیق کر لی ہے؟ صرف Transaction ID دیکھ کر Verified نہ کریں۔"))return;
@@ -331,7 +301,7 @@ async function updateOrder(id){
  else if(waPhone.startsWith("3"))waPhone="92"+waPhone;
  let message="";
  if(status==="shipped"){
-  message="Assalam-o-Alaikum "+(order.customer_name||"Customer")+",\\n\\nYour order #"+id+" has been dispatched through TCS. You will receive your parcel soon.\\n\\nThank you for shopping with Z.Mart PK!";
+  message="Assalam-o-Alaikum "+(order.customer_name||"Customer")+",\\n\\nYour order #"+id+" has been dispatched. You will receive your parcel soon.\\n\\nThank you for shopping with Z.Mart PK!";
  }else if(status==="delivered"){
   message="Assalam-o-Alaikum "+(order.customer_name||"Customer")+",\\n\\nYour order #"+id+" has been successfully delivered. We hope you enjoy your purchase.\\n\\nThank you for shopping with Z.Mart PK!";
  }else{
@@ -348,7 +318,11 @@ async function updateOrder(id){
   if(waWindow)waWindow.close();
   alert(waPhone.length<11?"Customer ka phone number WhatsApp ke liye durust nahi. Order status update ho gaya hai.":"Order status update ho gaya hai. WhatsApp tab popup block ho gaya; browser mein popups allow karein.");
  }
- alert("Order status update ho gaya hai. WhatsApp mein tayyar message khul gaya hai. Customer ko bhejne ke liye WhatsApp par Send dabayein.");
+ if(waPhone.length>=11&&waWindow){
+  alert("Order status update ho gaya hai. WhatsApp mein message tayyar hai; customer ko bhejne ke liye Send dabayein.");
+ }else{
+  alert("Order status update ho gaya hai. Customer ko WhatsApp par manually inform karein.");
+ }
  loadData();
 }
 document.getElementById("orderSearch").addEventListener("input",filterOrders);
