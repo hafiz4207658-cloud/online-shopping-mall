@@ -56,11 +56,11 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 <div class="card"><h3>Add New Product</h3>
 <input id="pname" placeholder="Product Name"><textarea id="pdesc" placeholder="Description"></textarea>
 <input id="price" type="number" placeholder="Price"><input id="image" placeholder="Image URL">
-<input id="category" placeholder="Category"><input id="stock" type="number" placeholder="Stock">
+<input id="category" placeholder="Category"><input id="stock" type="number" placeholder="Stock"><input id="deliveryCharges" type="number" min="0" step="1" value="0" placeholder="Delivery Charges (Rs.) — 0 = Free Delivery">
 <button onclick="addProduct()">Add Product</button></div>
 
 <div class="card"><h3>Products</h3><div class="tablewrap"><table>
-<thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Active</th><th>Actions</th></tr></thead>
+<thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Delivery</th><th>Stock</th><th>Active</th><th>Actions</th></tr></thead>
 <tbody id="products"></tbody></table></div></div>
 
 <div class="card"><h3>Customer Orders</h3><input id="orderSearch" type="search" oninput="filterOrders()" placeholder="آرڈر نمبر، نام، موبائل یا شہر سے تلاش کریں"><select id="orderStatusFilter" onchange="filterOrders()"><option value="">تمام آرڈرز</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select><div class="tablewrap"><table>
@@ -123,6 +123,7 @@ async function loadData(){
    <td>${p.image_url ? `<img class="product-img" src="${escapeHTML(p.image_url)}" alt="Product" onerror="this.style.display='none'>` : "No image"}</td>
    <td>${escapeHTML(p.name)}</td>
    <td>Rs. ${escapeHTML(p.price)}</td>
+   <td>${Number(p.delivery_charges)>0?"Rs. "+escapeHTML(p.delivery_charges):"Free"}</td>
    <td>${escapeHTML(p.stock)}</td>
    <td>${p.is_active?"Yes":"No"}</td>
    <td class="actions">
@@ -233,10 +234,10 @@ document.getElementById("adminReply").addEventListener("keydown",e=>{if(e.key===
 async function addProduct(){
  const product={name:document.getElementById("pname").value.trim(),description:document.getElementById("pdesc").value.trim(),
  price:Number(document.getElementById("price").value),image_url:document.getElementById("image").value.trim(),
- category:document.getElementById("category").value.trim(),stock:Number(document.getElementById("stock").value),is_active:true};
+ category:document.getElementById("category").value.trim(),stock:Number(document.getElementById("stock").value),delivery_charges:Math.max(0,Number(document.getElementById("deliveryCharges").value)||0),is_active:true};
  if(!product.name||!product.price||product.price<=0){alert("Valid product name and price are required.");return;}
  const {error}=await db.from("products").insert(product);if(error){alert("Error: "+error.message);return;}
- alert("Product added.");["pname","pdesc","price","image","category","stock"].forEach(id=>document.getElementById(id).value="");loadData();
+ alert("Product added.");["pname","pdesc","price","image","category","stock"].forEach(id=>document.getElementById(id).value="");document.getElementById("deliveryCharges").value="0";loadData();
 }
 async function editProduct(button){
  const id=button.dataset.id;const {data:p,error}=await db.from("products").select("*").eq("id",id).single();
@@ -247,9 +248,10 @@ async function editProduct(button){
  const image_url=prompt("Image URL:",p.image_url||"");if(image_url===null)return;
  const category=prompt("Category:",p.category||"");if(category===null)return;
  const stock=prompt("Stock:",p.stock);if(stock===null)return;
+ const delivery_charges=prompt("Delivery Charges (Rs.) — enter 0 for Free Delivery:",p.delivery_charges||0);if(delivery_charges===null)return;
  const active=confirm("Is this product active? OK = Yes, Cancel = No");
  if(!name.trim()||!price.trim()||Number(price)<=0||!Number.isFinite(Number(stock))||Number(stock)<0){alert("Please enter a valid name, price and stock.");return;}
- const {error:updateError}=await db.from("products").update({name:name.trim(),price:Number(price),description:description.trim(),image_url:image_url.trim(),category:category.trim(),stock:Number(stock),is_active:active}).eq("id",id);
+ const {error:updateError}=await db.from("products").update({name:name.trim(),price:Number(price),description:description.trim(),image_url:image_url.trim(),category:category.trim(),stock:Number(stock),delivery_charges:Math.max(0,Number(delivery_charges)||0),is_active:active}).eq("id",id);
  if(updateError){alert("Update error: "+updateError.message);return;}alert("Product updated successfully.");loadData();
 }
 async function deleteProduct(button){
