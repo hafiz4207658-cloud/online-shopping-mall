@@ -28,14 +28,14 @@ table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;bo
 .chat-compose{display:flex;gap:8px;align-items:center;margin-top:10px}
 .chat-compose input{flex:1;margin:0}.chat-compose button{width:120px;margin:0}
 @media(max-width:700px){body{padding:10px}.chat-layout{grid-template-columns:1fr}.chat-list{max-height:220px}.chat-compose{flex-direction:column}.chat-compose button{width:100%}}
-</style>
+.password-field{display:flex;align-items:center;gap:6px}.password-field input{flex:1;min-width:0;width:auto}.password-field .eye-toggle{width:52px;flex:0 0 52px;margin:7px 0;padding:10px;font-size:20px;background:#555;color:white}.password-field .eye-toggle:hover{background:#333}</style>
 </head>
 <body>
 <div class="container">
 <h1>Z.Mart PK</h1><h2>Admin Panel</h2>
 <div style="max-width:220px;margin:10px auto"><button type="button" id="adminLanguageToggle" onclick="toggleAdminLanguage()">English</button></div>
 <div class="card" id="login"><h3>Admin Login</h3>
-<input id="email" type="email" placeholder="Admin Email"><input id="password" type="password" placeholder="Password">
+<input id="email" type="email" placeholder="Admin Email"><div class="password-field"><input id="password" type="password" placeholder="Password"><button type="button" class="eye-toggle" onclick="toggleLoginPassword()" aria-label="Show or hide password" title="Show or hide password">👁</button></div>
 <button onclick="loginAdmin()">Login</button><button type="button" class="edit" onclick="sendPasswordReset()">Forgot Password? Email par reset link bhejein</button><p id="loginMessage"></p></div>
 <div class="card" id="passwordReset" style="display:none"><h3>Naya Password Set Karein</h3><input id="newPassword" type="password" placeholder="Naya password (kam az kam 6 characters)"><button onclick="saveNewPassword()">Password Update Karein</button><p id="resetMessage"></p></div>
 
@@ -80,6 +80,7 @@ db.auth.onAuthStateChange((event)=>{
  }
 });
 
+function toggleLoginPassword(){const input=document.getElementById("password");const button=document.querySelector(".eye-toggle");if(!input||!button)return;const show=input.type==="password";input.type=show?"text":"password";button.textContent=show?"🙈":"👁";button.title=show?"Hide password":"Show password";button.setAttribute("aria-label",button.title);}
 async function loginAdmin(){
  const email=document.getElementById("email").value,password=document.getElementById("password").value;
  const msg=document.getElementById("loginMessage");msg.textContent="Logging in...";
